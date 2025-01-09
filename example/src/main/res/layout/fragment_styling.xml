@@ -9,13 +9,13 @@
 
         <variable
             name="viewModel"
-            type="com.basistheory.android.example.viewmodel.CardFragmentViewModel" />
+            type="com.basistheory.elements.example.viewmodel.CardFragmentViewModel" />
     </data>
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        tools:context="com.basistheory.android.example.view.card.CardFragment">
+        tools:context="com.basistheory.elements.example.view.card.CardFragment">
 
         <ScrollView
             android:layout_width="match_parent"
@@ -28,7 +28,7 @@
                 android:layout_margin="20dp"
                 android:orientation="vertical">
 
-                <com.basistheory.android.view.TextElement
+                <com.basistheory.elements.view.TextElement
                     android:id="@+id/name"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -37,7 +37,7 @@
                     android:hint="@string/name"
                     app:bt_removeDefaultStyles="false" />
 
-                <com.basistheory.android.view.TextElement
+                <com.basistheory.elements.view.TextElement
                     android:id="@+id/socialSecurityNumber"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"

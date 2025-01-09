@@ -11,8 +11,8 @@ applications.
 3. Install and start a [virtual device](https://developer.android.com/studio/run/managing-avds) in Android Studio
 4. Copy the `local.properties.example` file to `local.properties` and set the following properties:
     - `sdk.dir`: Local path to the Android SDK on your machine, e.g. `/Users/me/Library/Android/sdk`
-    - `com.basistheory.android.example.apiUrl`: `https://api.basistheory.com`
-    - `com.basistheory.android.example.apiKey`: A Basis Theory API key with `token:create` permission on the `/` container
+    - `com.basistheory.elements.example.apiUrl`: `https://api.basistheory.com`
+    - `com.basistheory.elements.example.apiKey`: A Basis Theory API key with `token:create` permission on the `/` container
 
 5. Build and run the `example` module on your virtual device
 

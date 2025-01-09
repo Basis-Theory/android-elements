@@ -48,17 +48,17 @@ enables code shrinking or obfuscation
 Simply include one or more elements within your application's views:
 
 ```xml
-<com.basistheory.android.view.CardNumberElement
+<com.basistheory.elements.view.CardNumberElement
     android:id="@+id/card_number"
     android:layout_width="match_parent"
     android:layout_height="wrap_content" />
 
-<com.basistheory.android.view.CardExpirationDateElement
+<com.basistheory.elements.view.CardExpirationDateElement
     android:id="@+id/expiration_date"
     android:layout_width="match_parent"
     android:layout_height="wrap_content" />
 
-<com.basistheory.android.view.CardVerificationCodeElement
+<com.basistheory.elements.view.CardVerificationCodeElement
     android:id="@+id/cvc"
     android:layout_width="match_parent"
     android:layout_height="wrap_content" />

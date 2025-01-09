@@ -5,7 +5,7 @@ plugins {
 }
 
 android {
-    namespace 'com.basistheory.android'
+    namespace 'com.basistheory.elements'
     compileSdk 34
 
     defaultConfig {

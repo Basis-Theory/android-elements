@@ -5,8 +5,8 @@ on:
     branches: [ master ]
 
 env:
-  ORG_GRADLE_PROJECT_com.basistheory.android.example.apiUrl: https://api.flock-dev.com
-  ORG_GRADLE_PROJECT_com.basistheory.android.example.apiKey: ${{ secrets.BASIS_THEORY_API_KEY }}
+  ORG_GRADLE_PROJECT_com.basistheory.elements.example.apiUrl: https://api.flock-dev.com
+  ORG_GRADLE_PROJECT_com.basistheory.elements.example.apiKey: ${{ secrets.BASIS_THEORY_API_KEY }}
 
 jobs:
   build:

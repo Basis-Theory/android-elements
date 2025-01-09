@@ -8,13 +8,13 @@
 
         <variable
             name="viewModel"
-            type="com.basistheory.android.example.viewmodel.CardFragmentViewModel" />
+            type="com.basistheory.elements.example.viewmodel.CardFragmentViewModel" />
     </data>
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        tools:context="com.basistheory.android.example.view.reveal.RevealDataFragment">
+        tools:context="com.basistheory.elements.example.view.reveal.RevealDataFragment">
 
         <ScrollView
             android:layout_width="match_parent"
@@ -27,7 +27,7 @@
                 android:layout_margin="20dp"
                 android:orientation="vertical">
 
-                <com.basistheory.android.view.CardNumberElement
+                <com.basistheory.elements.view.CardNumberElement
                     android:id="@+id/revealedCardNumber"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -37,7 +37,7 @@
                     android:hint="@string/revealed_card_number"
                     android:textColor="@color/gray_800" />
 
-                <com.basistheory.android.view.CardExpirationDateElement
+                <com.basistheory.elements.view.CardExpirationDateElement
                     android:id="@+id/revealedExpirationDate"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -48,7 +48,7 @@
                     android:hint="@string/revealed_expiration_date"
                     android:textColor="@color/gray_800" />
 
-                <com.basistheory.android.view.CardVerificationCodeElement
+                <com.basistheory.elements.view.CardVerificationCodeElement
                     android:id="@+id/revealedCvc"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -59,7 +59,7 @@
                     android:hint="@string/revealed_cvc"
                     android:textColor="@color/gray_800" />
 
-                <com.basistheory.android.view.CardNumberElement
+                <com.basistheory.elements.view.CardNumberElement
                     android:id="@+id/card_number"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -69,7 +69,7 @@
                     android:hint="@string/card_number"
                     android:textColor="@{ viewModel.cardNumber.isInvalid ? @color/red : @color/gray_800 }" />
 
-                <com.basistheory.android.view.CardExpirationDateElement
+                <com.basistheory.elements.view.CardExpirationDateElement
                     android:id="@+id/expiration_date"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -79,7 +79,7 @@
                     android:hint="@string/expiration_date"
                     android:textColor="@{ viewModel.cardExpiration.isInvalid ? @color/red : @color/gray_800 }" />
 
-                <com.basistheory.android.view.CardVerificationCodeElement
+                <com.basistheory.elements.view.CardVerificationCodeElement
                     android:id="@+id/cvc"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
