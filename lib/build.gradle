@@ -77,7 +77,7 @@ dependencies {
     implementation 'com.google.android.material:material:1.7.0'
     implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-core:1.7.3'
     implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3'
-    implementation 'org.apache.commons:commons-lang3:3.13.0'
+    implementation 'org.apache.commons:commons-lang3:3.17.0'
     implementation 'org.threeten:threetenbp:1.6.8'
     implementation('com.github.basis-theory:basistheory-java:3.0.1') {
         exclude group: 'javax.ws.rs', module: 'javax.ws.rs-api'
