@@ -97,7 +97,7 @@ class ApiClientProviderTests {
 
         val defaultUserAgent = defaultHeaders?.get("User-Agent")
         expectThat(defaultUserAgent).isNotNull()
-            .startsWith("basistheory-android/${BuildConfig.VERSION_NAME}")
+            .startsWith("android-elements/${BuildConfig.VERSION_NAME}")
     }
 
     private fun configuresApiClientWithDefaults(

@@ -1,8 +1,6 @@
-# Basis Theory Android SDK
+# android-elements
 
-The [Basis Theory](https://basistheory.com) Android SDK makes it easy to securely collect sensitive 
-data within your Android applications while keeping your mobile application out of compliance scope. 
-[Elements](https://developers.basistheory.com/docs/sdks/mobile/android/) are secure inputs that enable you to collect
+[Basis Theory Elements](https://developers.basistheory.com/docs/sdks/mobile/android/) are simple, secure, developer-friendly inputs that enable you to collect
 sensitive data within your application and securely store this data within Basis Theory’s certified 
 token vault.
 
@@ -28,7 +26,7 @@ Add this dependency to your project's build file:
   }
 
   dependencies {
-      implementation 'com.github.basis-theory:basistheory-android:4.2.3'
+      implementation 'com.github.basis-theory:android-elements:0.1.1'
   }
 ```
 

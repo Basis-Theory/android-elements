@@ -34,7 +34,7 @@ internal class ApiClientProvider(
         return Configuration.getDefaultApiClient().also { client ->
             client.basePath = apiUrl
 
-            val userAgent = "basistheory-android/${BuildConfig.VERSION_NAME} ${System.getProperty("http.agent") ?: ""}".trim()
+            val userAgent = "android-elements/${BuildConfig.VERSION_NAME} ${System.getProperty("http.agent") ?: ""}".trim()
             client.setUserAgent(userAgent)
 
             (client.getAuthentication("ApiKey") as ApiKeyAuth).also { auth ->
