@@ -7,49 +7,49 @@
 
     <fragment
         android:id="@+id/nav_card"
-        android:name="com.basistheory.android.example.view.card.CardFragment"
+        android:name="com.basistheory.elements.example.view.card.CardFragment"
         android:label="@string/title_card"
         tools:layout="@layout/fragment_card" />
 
     <fragment
         android:id="@+id/nav_social_security_number"
-        android:name="com.basistheory.android.example.view.social_security_number.SocialSecurityNumberFragment"
+        android:name="com.basistheory.elements.example.view.social_security_number.SocialSecurityNumberFragment"
         android:label="@string/title_social_security_number"
         tools:layout="@layout/fragment_social_security_number" />
 
     <fragment
         android:id="@+id/nav_custom_form"
-        android:name="com.basistheory.android.example.view.custom_form.CustomFormFragment"
+        android:name="com.basistheory.elements.example.view.custom_form.CustomFormFragment"
         android:label="@string/title_custom_form"
         tools:layout="@layout/fragment_custom_form" />
 
     <fragment
         android:id="@+id/nav_virtual_card"
-        android:name="com.basistheory.android.example.view.virtual_card.VirtualCardFragment"
+        android:name="com.basistheory.elements.example.view.virtual_card.VirtualCardFragment"
         android:label="@string/title_virtual_card"
         tools:layout="@layout/fragment_virtual_card" />
 
     <fragment
         android:id="@+id/nav_reveal"
-        android:name="com.basistheory.android.example.view.reveal.RevealDataFragment"
+        android:name="com.basistheory.elements.example.view.reveal.RevealDataFragment"
         android:label="@string/title_reveal"
         tools:layout="@layout/fragment_reveal" />
 
     <fragment
         android:id="@+id/nav_styling"
-        android:name="com.basistheory.android.example.view.styling.StylingFragment"
+        android:name="com.basistheory.elements.example.view.styling.StylingFragment"
         android:label="@string/title_styling"
         tools:layout="@layout/fragment_styling" />
 
     <fragment
         android:id="@+id/nav_raw_proxy_response"
-        android:name="com.basistheory.android.example.view.raw_proxy_response.RawProxyResponseFragment"
+        android:name="com.basistheory.elements.example.view.raw_proxy_response.RawProxyResponseFragment"
         android:label="@string/title_raw_proxy_response"
         tools:layout="@layout/fragment_raw_proxy_response" />
 
     <fragment
         android:id="@+id/nav_dual_write"
-        android:name="com.basistheory.android.example.view.dual_write.DualWriteFragment"
+        android:name="com.basistheory.elements.example.view.dual_write.DualWriteFragment"
         android:label="@string/title_dual_write"
         tools:layout="@layout/fragment_dual_write" />
 

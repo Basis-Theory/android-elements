@@ -4,18 +4,18 @@ plugins {
 }
 
 android {
-    namespace 'com.basistheory.android.example'
+    namespace 'com.basistheory.elements.example'
     compileSdk 33
 
     defaultConfig {
-        applicationId 'com.basistheory.android.example'
+        applicationId 'com.basistheory.elements.example'
         minSdk 21
         targetSdk 33
         versionCode 1
         versionName "1.0"
 
-        buildConfigField 'String', 'BASIS_THEORY_API_URL', tryFindProperty('com.basistheory.android.example.apiUrl')
-        buildConfigField 'String', 'BASIS_THEORY_API_KEY', tryFindProperty('com.basistheory.android.example.apiKey')
+        buildConfigField 'String', 'BASIS_THEORY_API_URL', tryFindProperty('com.basistheory.elements.example.apiUrl')
+        buildConfigField 'String', 'BASIS_THEORY_API_KEY', tryFindProperty('com.basistheory.elements.example.apiKey')
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }

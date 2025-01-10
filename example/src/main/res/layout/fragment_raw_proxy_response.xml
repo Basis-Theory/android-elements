@@ -7,13 +7,13 @@
         <import type="android.view.View" />
         <variable
             name="viewModel"
-            type="com.basistheory.android.example.viewmodel.ApiViewModel" />
+            type="com.basistheory.elements.example.viewmodel.ApiViewModel" />
     </data>
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        tools:context="com.basistheory.android.example.view.raw_proxy_response.RawProxyResponseFragment">
+        tools:context="com.basistheory.elements.example.view.raw_proxy_response.RawProxyResponseFragment">
 
         <ScrollView
             android:layout_width="match_parent"
@@ -26,7 +26,7 @@
                 android:layout_margin="20dp"
                 android:orientation="vertical">
 
-                <com.basistheory.android.view.TextElement
+                <com.basistheory.elements.view.TextElement
                     android:id="@+id/text_element"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"

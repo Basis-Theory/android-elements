@@ -5,7 +5,7 @@ plugins {
 }
 
 android {
-    namespace 'com.basistheory.android'
+    namespace 'com.basistheory.elements'
     compileSdk 34
 
     defaultConfig {
@@ -57,7 +57,7 @@ afterEvaluate {
             release(MavenPublication) {
                 from components.release
                 groupId 'com.basistheory'
-                artifactId 'basistheory-android'
+                artifactId 'android-elements'
                 version = android.defaultConfig.versionName
             }
         }

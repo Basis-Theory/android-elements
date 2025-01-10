@@ -5,7 +5,7 @@ sdk.dir=/Users/[replace]/Library/Android/sdk
 
 # the following properties are compiled into the BuildConfig source file
 # [optional] defaults to https://api.basistheory.com in ./example/gradle.properties
-com.basistheory.android.example.apiUrl=https://api.basistheory.com
+com.basistheory.elements.example.apiUrl=https://api.basistheory.com
 # [required] A Basis Theory API key with `token:create` permission on the `/` container
-com.basistheory.android.example.apiKey=[replace]
-com.basistheory.android.compose.example.apiKey=[replace]
+com.basistheory.elements.example.apiKey=[replace]
+com.basistheory.elements.compose.example.apiKey=[replace]

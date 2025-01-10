@@ -4,17 +4,17 @@ plugins {
 }
 
 android {
-    namespace 'com.basistheory.android.compose.example'
+    namespace 'com.basistheory.elements.compose.example'
     compileSdk 34
 
     defaultConfig {
-        applicationId "com.basistheory.android.compose.example"
+        applicationId "com.basistheory.elements.compose.example"
         minSdk 21
         targetSdk 34
         versionCode 1
         versionName "1.0"
 
-        buildConfigField 'String', 'BASIS_THEORY_API_KEY', tryFindProperty('com.basistheory.android.compose.example.apiKey')
+        buildConfigField 'String', 'BASIS_THEORY_API_KEY', tryFindProperty('com.basistheory.elements.compose.example.apiKey')
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {

@@ -11,24 +11,24 @@ applications.
 3. Install and start a [virtual device](https://developer.android.com/studio/run/managing-avds) in Android Studio
 4. Copy the `local.properties.example` file to `local.properties` and set the following properties:
     - `sdk.dir`: Local path to the Android SDK on your machine, e.g. `/Users/me/Library/Android/sdk`
-    - `com.basistheory.android.example.apiUrl`: `https://api.basistheory.com`
-    - `com.basistheory.android.example.apiKey`: A Basis Theory API key with `token:create` permission on the `/` container
+    - `com.basistheory.elements.example.apiUrl`: `https://api.basistheory.com`
+    - `com.basistheory.elements.example.apiKey`: A Basis Theory API key with `token:create` permission on the `/` container
 
 5. Build and run the `example` module on your virtual device
 
-<img width="384" height="42" src="https://raw.githubusercontent.com/basis-theory/basistheory-android/master/docs/img/example_app_run.png" />
+<img width="384" height="42" src="https://raw.githubusercontent.com/basis-theory/android-elements/master/docs/img/example_app_run.png" />
 
 
 ## Examples
 
 ### [Collect Cards](/example/src/main/java/com/basistheory/android/example/view/card/CardFragment.kt)
 
-<img width="384" height="384" src="https://raw.githubusercontent.com/basis-theory/basistheory-android/master/docs/img/example_app_collect_cards.png" />
+<img width="384" height="384" src="https://raw.githubusercontent.com/basis-theory/android-elements/master/docs/img/example_app_collect_cards.png" />
 
 ### [Collect Social Security Numbers](/example/src/main/java/com/basistheory/android/example/view/social_security_number/SocialSecurityNumberFragment.kt)
 
-<img width="358" height="272" src="https://raw.githubusercontent.com/basis-theory/basistheory-android/master/docs/img/example_app_collect_ssns.png" />
+<img width="358" height="272" src="https://raw.githubusercontent.com/basis-theory/android-elements/master/docs/img/example_app_collect_ssns.png" />
 
 ### [Custom Forms](/example/src/main/java/com/basistheory/android/example/view/custom_form/CustomFormFragment.kt)
 
-<img width="358" height="385" src="https://raw.githubusercontent.com/basis-theory/basistheory-android/master/docs/img/example_app_custom_forms.png" />
+<img width="358" height="385" src="https://raw.githubusercontent.com/basis-theory/android-elements/master/docs/img/example_app_custom_forms.png" />
