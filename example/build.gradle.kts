@@ -3,36 +3,45 @@ import java.util.Properties
 
 plugins {
     alias(libs.plugins.android.application)
-    alias(libs.plugins.org.jetbrains.kotlin.android)
+    alias(libs.plugins.kotlin.android)
 }
 
 android {
     namespace = "com.basistheory.elements.example"
-    compileSdk = 34
+    compileSdk = 35
 
     defaultConfig {
         applicationId = "com.basistheory.elements.example"
         minSdk = 21
-        targetSdk = 34
+        targetSdk = 35
         versionCode = 1
         versionName = "1.0"
 
-        buildConfigField("String", "BASIS_THEORY_API_URL", tryFindProperty("com.basistheory.elements.example.apiUrl"))
-        buildConfigField("String", "BASIS_THEORY_API_KEY", tryFindProperty("com.basistheory.elements.example.apiKey"))
+        buildConfigField(
+            "String",
+            "BASIS_THEORY_API_URL",
+            tryFindProperty("com.basistheory.elements.example.apiUrl")
+        )
+        buildConfigField(
+            "String",
+            "BASIS_THEORY_API_KEY",
+            tryFindProperty("com.basistheory.elements.example.apiKey")
+        )
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
-
     buildFeatures {
         buildConfig = true
         viewBinding = true
     }
-
     buildTypes {
         release {
             isMinifyEnabled = true
             isShrinkResources = true
-            proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
+            proguardFiles(
+                getDefaultProguardFile("proguard-android-optimize.txt"),
+                "proguard-rules.pro"
+            )
         }
     }
     compileOptions {
@@ -69,7 +78,7 @@ dependencies {
     coreLibraryDesugaring(libs.desugar.jdk.libs)
 }
 
-configurations.configureEach {
+configurations.all {
     resolutionStrategy {
         eachDependency {
             if (requested.module.toString() == "org.yaml:snakeyaml") {

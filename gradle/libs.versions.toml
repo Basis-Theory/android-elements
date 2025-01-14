@@ -16,15 +16,14 @@ junitVersion = "1.2.1"
 kotlin = "2.1.0"
 kotlinxCoroutinesCore = "1.7.3"
 kotlinxCoroutinesAndroid = "1.7.3"
-#noinspection GradleDependency - this is the latest version that supports Android 34
-ktx = "1.13.1"
+ktx = "1.15.0"
 lifecycleRuntimeKtx = "2.8.7"
 compose = "1.7.6"
 material = "1.12.0"
 mockk = "1.13.8"
 navigationFragmentKtx = "2.8.5"
 okhttp = "4.11.0"
-robolectric = "4.12.1"
+robolectric = "4.13"
 striktCore = "0.34.1"
 threetenbp = "1.6.8"
 
@@ -69,6 +68,6 @@ threetenbp = { module = "org.threeten:threetenbp", version.ref = "threetenbp" }
 [plugins]
 android-application = { id = "com.android.application", version.ref = "androidGradlePlugin" }
 android-library = { id = "com.android.library", version.ref = "androidGradlePlugin" }
-org-jetbrains-kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
-compose-compiler = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
+kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
+kotlin-compose = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
 maven-publish = { id = "maven-publish" }

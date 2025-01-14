@@ -3,13 +3,13 @@ import org.gradle.api.tasks.testing.logging.TestExceptionFormat
 
 plugins {
     alias(libs.plugins.android.library)
-    alias(libs.plugins.org.jetbrains.kotlin.android)
+    alias(libs.plugins.kotlin.android)
     alias(libs.plugins.maven.publish)
 }
 
 android {
     namespace = "com.basistheory.elements"
-    compileSdk = 34
+    compileSdk = 35
 
     defaultConfig {
         minSdk = 21
@@ -27,7 +27,10 @@ android {
     buildTypes {
         release {
             isMinifyEnabled = false
-            proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
+            proguardFiles(
+                getDefaultProguardFile("proguard-android-optimize.txt"),
+                "proguard-rules.pro"
+            )
         }
     }
     compileOptions {
@@ -67,13 +70,6 @@ afterEvaluate {
     }
 }
 
-configurations.all {
-    resolutionStrategy {
-        force("com.fasterxml.jackson.core:jackson-core:2.15.0-rc1")
-    }
-}
-
-
 dependencies {
     implementation(libs.androidx.ktx)
     implementation(libs.androidx.appcompat)
@@ -107,11 +103,11 @@ configurations.all {
                     }
                     useVersion("2.2")
                 }
-                "org.bouncycastle:bcprov-jdk18on" -> {
+                "com.fasterxml.jackson.core:jackson-core" -> {
                     artifactSelection {
                         selectArtifact(DependencyArtifact.DEFAULT_TYPE, null, null)
                     }
-                    useVersion("1.78")
+                    useVersion("2.15.0-rc1")
                 }
             }
         }
