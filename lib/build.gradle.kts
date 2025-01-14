@@ -14,7 +14,7 @@ android {
     defaultConfig {
         minSdk = 21
 
-        val versionName = "0.0.1"
+        val versionName = "1.0.0"
         buildConfigField("String", "VERSION_NAME", "\"${versionName}\"")
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
