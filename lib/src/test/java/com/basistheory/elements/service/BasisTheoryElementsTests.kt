@@ -192,7 +192,7 @@ class BasisTheoryElementsTests {
                         val timestamp = Instant.now().toString()
                         val nullValue = null
                     }
-                    val array = arrayOf(
+                    val array = arrayOf<Any?>(
                         faker.lorem().word(),
                         faker.random().nextDouble(),
                         faker.random().nextBoolean(),
@@ -480,7 +480,7 @@ class BasisTheoryElementsTests {
                     val timestamp = Instant.now().toString()
                     val nullValue = null
                 }
-                val array = arrayOf(
+                val array = arrayOf<Any?>(
                     faker.lorem().word(),
                     faker.random().nextDouble(),
                     faker.random().nextBoolean(),
