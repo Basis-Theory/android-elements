@@ -23,7 +23,7 @@ material = "1.12.0"
 mockk = "1.13.8"
 navigationFragmentKtx = "2.8.5"
 okhttp = "4.11.0"
-robolectric = "4.13"
+robolectric = "4.14.1"
 striktCore = "0.34.1"
 threetenbp = "1.6.8"
 
