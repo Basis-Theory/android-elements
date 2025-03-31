@@ -10,7 +10,7 @@ subprojects {
     configurations.all {
         resolutionStrategy {
             // pin transitive dependencies of android gradle plugin with vulnerabilities
-            force("com.google.protobuf:protobuf-java:3.25.5")
+            force("com.google.protobuf:protobuf-java:4.30.2")
             force("io.netty:netty-codec-http2:4.1.100.Final")
         }
     }
