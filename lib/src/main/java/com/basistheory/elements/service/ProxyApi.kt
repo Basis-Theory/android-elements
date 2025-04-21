@@ -1,16 +1,23 @@
 package com.basistheory.elements.service
 
-import com.basistheory.ApiClient
+import com.basistheory.BasisTheoryApiClient
 import com.basistheory.elements.model.ElementValueReference
 import com.basistheory.elements.util.isPrimitiveType
 import com.basistheory.elements.util.replaceElementRefs
 import com.basistheory.elements.util.toMap
 import com.basistheory.elements.util.transformResponseToValueReferences
 import com.basistheory.elements.view.TextElement
+import com.google.gson.Gson
+import com.google.gson.reflect.TypeToken
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import java.lang.reflect.Type
+import okhttp3.HttpUrl.Companion.toHttpUrlOrNull
+import okhttp3.MediaType.Companion.toMediaTypeOrNull
+import okhttp3.OkHttpClient
+import okhttp3.Request
+import okhttp3.RequestBody.Companion.toRequestBody
+
 
 interface Proxy {
 
@@ -44,7 +51,9 @@ class ProxyRequest {
 
 class ProxyApi(
     val dispatcher: CoroutineDispatcher = Dispatchers.IO,
-    val apiClientProvider: (apiKeyOverride: String?) -> ApiClient
+    val apiBaseUrl: String = "https://api.basistheory.com",
+    val apiKey: String,
+    val httpClient: OkHttpClient = OkHttpClient()
 ) : Proxy {
 
     override suspend fun get(proxyRequest: ProxyRequest, apiKeyOverride: String?): Any? =
@@ -73,43 +82,67 @@ class ProxyApi(
         }
 
     private fun proxy(method: String, proxyRequest: ProxyRequest, apiKeyOverride: String?): Any? {
-        val apiClient = apiClientProvider(apiKeyOverride)
-        var body = proxyRequest.body
+        val gson = Gson()
 
-        if (body != null) {
-            body = if (body::class.java.isPrimitiveType()) body
-            else if (body is TextElement) body.getTransformedText()
-            else if (body is ElementValueReference) body.getValue()
-            else replaceElementRefs(body.toMap())
+        val processedBody = proxyRequest.body?.let { body ->
+            when {
+                body::class.java.isPrimitiveType() -> body
+                body is TextElement -> body.getTransformedText()
+                body is ElementValueReference -> body.getValue()
+                else -> replaceElementRefs(body.toMap())
+            }
         }
 
-        val call = apiClient.buildCall(
-            "${apiClient.basePath}/proxy",
-            proxyRequest.path ?: "",
-            method,
-            proxyRequest.queryParams?.toPairs(),
-            emptyList(),
-            body,
-            proxyRequest.headers,
-            emptyMap(),
-            emptyMap(),
-            arrayOf("ApiKey"),
-            null
-        )
-        val returnType: Type = object : com.google.gson.reflect.TypeToken<Any?>() {}.type
-        val response = apiClient.execute<Any>(call, returnType)
+        val urlBuilder = (apiBaseUrl + "/proxy" + (proxyRequest.path.orEmpty()))
+            .toHttpUrlOrNull()?.newBuilder()
+            ?: throw IllegalArgumentException("Invalid URL")
+        proxyRequest.queryParams?.toPairs()?.forEach { (key, value) ->
+            urlBuilder.addQueryParameter(key, value)
+        }
+        val url = urlBuilder.build()
 
+        val isTextPlain = proxyRequest.headers
+            ?.any {
+                it.key.equals("Content-Type", ignoreCase = true) &&
+                        it.value.contains("text/plain", ignoreCase = true)
+            }
+            ?: false
 
-        if (response.headers.containsKey(BT_EXPOSE_RAW_PROXY_RESPONSE_HEADER)) {
-            return response.data
+        val requestBody = when {
+            method.equals("GET", ignoreCase = true) ||
+                    method.equals("DELETE", ignoreCase = true) -> null
+            isTextPlain -> processedBody?.toString().orEmpty()
+                .toRequestBody("text/plain; charset=utf-8".toMediaTypeOrNull())
+
+            else -> processedBody?.let { gson.toJson(it) }.orEmpty()
+                .toRequestBody("application/json; charset=utf-8".toMediaTypeOrNull())
         }
 
-        return transformResponseToValueReferences(response.data)
+        val request = Request.Builder()
+            .url(url)
+            .method(method.uppercase(), requestBody)
+            .apply {
+                proxyRequest.headers?.forEach { (key, value) ->
+                    addHeader(key, value)
+                }
+                val apiKey = apiKeyOverride ?: apiKey
+                addHeader("Authorization", "Bearer $apiKey")
+            }
+            .build()
+
+        httpClient.newCall(request).execute().use { response ->
+            val responseStr = response.body?.string().orEmpty()
+            val returnType = object : TypeToken<Any?>() {}.type
+            val data: Any? = gson.fromJson(responseStr, returnType)
+            return if (response.header(BT_EXPOSE_RAW_PROXY_RESPONSE_HEADER) != null)
+                data
+            else transformResponseToValueReferences(data)
+        }
     }
 
-    private fun Map<String, String>.toPairs(): List<com.basistheory.Pair> =
+    private fun Map<String, String>.toPairs(): List<Pair<String, String?>> =
         this.map {
-            com.basistheory.Pair(it.key, it.value)
+            Pair(it.key, it.value)
         }
 }
 

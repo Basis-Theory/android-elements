@@ -2,12 +2,6 @@ package com.basistheory.elements.service
 
 import android.app.Activity
 import android.view.View
-import com.basistheory.ApiClient
-import com.basistheory.ApiResponse
-import com.basistheory.SessionsApi
-import com.basistheory.Token
-import com.basistheory.TokenizeApi
-import com.basistheory.TokensApi
 import com.basistheory.elements.constants.ElementValueType
 import com.basistheory.elements.model.CreateTokenRequest
 import com.basistheory.elements.model.ElementValueReference
@@ -18,19 +12,30 @@ import com.basistheory.elements.view.CardExpirationDateElement
 import com.basistheory.elements.view.CardNumberElement
 import com.basistheory.elements.view.CardVerificationCodeElement
 import com.basistheory.elements.view.TextElement
+import com.basistheory.resources.sessions.SessionsClient
+import com.basistheory.resources.tokens.TokensClient
 import com.github.javafaker.Faker
 import io.mockk.Called
+import io.mockk.CapturingSlot
+import io.mockk.slot
+import io.mockk.Runs
 import io.mockk.every
 import io.mockk.impl.annotations.InjectMockKs
+import io.mockk.impl.annotations.MockK
 import io.mockk.impl.annotations.RelaxedMockK
 import io.mockk.impl.annotations.SpyK
 import io.mockk.junit4.MockKRule
+import io.mockk.just
 import io.mockk.slot
 import io.mockk.spyk
 import io.mockk.verify
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking
 import okhttp3.Call
+import okhttp3.OkHttpClient
+import okhttp3.Request
+import okhttp3.Response
+import okhttp3.ResponseBody
 import okio.Buffer
 import org.junit.Before
 import org.junit.Rule
@@ -89,14 +94,12 @@ class BasisTheoryElementsTests {
     @get:Rule
     val mockkRule = MockKRule(this)
 
-    @RelaxedMockK
-    private lateinit var tokenizeApi: TokenizeApi
 
     @RelaxedMockK
-    private lateinit var tokensApi: TokensApi
+    private lateinit var tokensApi: TokensClient
 
     @RelaxedMockK
-    private lateinit var sessionsApi: SessionsApi
+    private lateinit var sessionsApi: SessionsClient
 
     @RelaxedMockK
     private lateinit var proxyApi: ProxyApi
@@ -110,10 +113,20 @@ class BasisTheoryElementsTests {
     @InjectMockKs
     private lateinit var bt: BasisTheoryElements
 
-    @SpyK
-    private var apiClient: ApiClient = spyk()
 
-    private val testProxyApi: ProxyApi = ProxyApi(Dispatchers.IO) { apiClient }
+    @MockK
+    private lateinit var mockHttpClient: OkHttpClient
+
+    @MockK
+    private lateinit var mockCall: Call
+
+    @MockK
+    private lateinit var mockResponse: Response
+
+    @MockK
+    private lateinit var mockResponseBody: ResponseBody
+
+    private lateinit var testProxyApi: ProxyApi
 
     private var proxyRequest: ProxyRequest = ProxyRequest()
 
@@ -131,34 +144,47 @@ class BasisTheoryElementsTests {
         intElement = TextElement(activity).also { it.id = View.generateViewId() }
         doubleElement = TextElement(activity).also { it.id = View.generateViewId() }
         boolElement = TextElement(activity).also { it.id = View.generateViewId() }
+
+        testProxyApi = ProxyApi(
+            dispatcher = Dispatchers.IO,
+            apiBaseUrl = "https://api.flock-dev.com",
+            apiKey = "123",
+            httpClient = mockHttpClient
+        )
+
+        every { mockHttpClient.newCall(any()) } returns mockCall
+        every { mockCall.execute() } returns mockResponse
+        every { mockResponse.body } returns mockResponseBody
+        every { mockResponseBody.string() } returns "\"Hello World\""
+        every { mockResponse.header(any()) } returns null
     }
 
     @Test
     fun `tokenize should pass api key override to ApiClientProvider`() = runBlocking {
         val apiKeyOverride = UUID.randomUUID().toString()
 
-        every { provider.getTokenizeApi(any()) } returns tokenizeApi
+        every { provider.getTokensApi(any()) } returns tokensApi
 
         bt.tokenize(object {}, apiKeyOverride)
 
-        verify { provider.getTokenizeApi(apiKeyOverride) }
+        verify { provider.getTokensApi(apiKeyOverride) }
     }
 
     @Test
     fun `tokenize should forward top level primitive value without modification`() =
         runBlocking {
-            every { provider.getTokenizeApi(any()) } returns tokenizeApi
+            every { provider.getTokensApi(any()) } returns tokensApi
 
             val name = faker.name().fullName()
             bt.tokenize(name)
 
-            verify { tokenizeApi.tokenize(name) }
+            verify { tokensApi.tokenize(name) }
         }
 
     @Test
     fun `tokenize should forward primitive data values within request without modification`() =
         runBlocking {
-            every { provider.getTokenizeApi(any()) } returns tokenizeApi
+            every { provider.getTokensApi(any()) } returns tokensApi
 
             val request = object {
                 val type = "token"
@@ -172,13 +198,13 @@ class BasisTheoryElementsTests {
                 "data" to request.data
             )
 
-            verify { tokenizeApi.tokenize(expectedRequest) }
+            verify { tokensApi.tokenize(expectedRequest) }
         }
 
     @Test
     fun `tokenize should forward complex data values within request without modification`() =
         runBlocking {
-            every { provider.getTokenizeApi(any()) } returns tokenizeApi
+            every { provider.getTokensApi(any()) } returns tokensApi
 
             val request = object {
                 val type = "token"
@@ -232,26 +258,26 @@ class BasisTheoryElementsTests {
                 )
             )
 
-            verify { tokenizeApi.tokenize(expectedRequest) }
+            verify { tokensApi.tokenize(expectedRequest) }
         }
 
     @Test
     fun `tokenize should replace top level TextElement ref with underlying data value`() =
         runBlocking {
-            every { provider.getTokenizeApi(any()) } returns tokenizeApi
+            every { provider.getTokensApi(any()) } returns tokensApi
 
             val name = faker.name().fullName()
             nameElement.setText(name)
 
             bt.tokenize(nameElement)
 
-            verify { tokenizeApi.tokenize(name) }
+            verify { tokensApi.tokenize(name) }
         }
 
     @Test
     fun `tokenize should replace top level CardElement ref with underlying data value`() =
         runBlocking {
-            every { provider.getTokenizeApi(any()) } returns tokenizeApi
+            every { provider.getTokensApi(any()) } returns tokensApi
 
             val cardNumber = testCardNumbers.random()
             cardNumberElement.setText(cardNumber)
@@ -259,13 +285,13 @@ class BasisTheoryElementsTests {
             bt.tokenize(cardNumberElement)
 
             val expectedTokenizedCardNumber = cardNumber.replace(Regex("""[^\d]"""), "")
-            verify { tokenizeApi.tokenize(expectedTokenizedCardNumber) }
+            verify { tokensApi.tokenize(expectedTokenizedCardNumber) }
         }
 
     @Test
     fun `tokenize should replace top level CardExpirationDateElement refs with underlying data value`() =
         runBlocking {
-            every { provider.getTokenizeApi(any()) } returns tokenizeApi
+            every { provider.getTokensApi(any()) } returns tokensApi
 
             val expDate = LocalDate.now().plus(2, ChronoUnit.YEARS)
             val month = expDate.monthValue.toString().padStart(2, '0')
@@ -273,42 +299,42 @@ class BasisTheoryElementsTests {
             cardExpElement.setText("$month/${year.takeLast(2)}")
 
             bt.tokenize(cardExpElement.month())
-            verify { tokenizeApi.tokenize(expDate.monthValue) }
+            verify { tokensApi.tokenize(expDate.monthValue) }
 
             bt.tokenize(cardExpElement.year())
-            verify { tokenizeApi.tokenize(expDate.year) }
+            verify { tokensApi.tokenize(expDate.year) }
 
             bt.tokenize(cardExpElement.format("MM"))
-            verify { tokenizeApi.tokenize(month) }
+            verify { tokensApi.tokenize(month) }
 
             bt.tokenize(cardExpElement.format("yyyy"))
-            verify { tokenizeApi.tokenize(year) }
+            verify { tokensApi.tokenize(year) }
 
             if (month.take(1) == "0") {
                 bt.tokenize(cardExpElement.format("M"))
-                verify { tokenizeApi.tokenize(month.takeLast(1)) }
+                verify { tokensApi.tokenize(month.takeLast(1)) }
             } else {
                 bt.tokenize(cardExpElement.format("M"))
-                verify { tokenizeApi.tokenize(month) }
+                verify { tokensApi.tokenize(month) }
             }
 
             bt.tokenize(cardExpElement.format("yyyyMM"))
-            verify { tokenizeApi.tokenize(year + month) }
+            verify { tokensApi.tokenize(year + month) }
 
             bt.tokenize(cardExpElement.format("MM/yyyy"))
-            verify { tokenizeApi.tokenize("$month/$year") }
+            verify { tokensApi.tokenize("$month/$year") }
 
             bt.tokenize(cardExpElement.format("MM/yy"))
-            verify { tokenizeApi.tokenize("$month/${year.takeLast(2)}") }
+            verify { tokensApi.tokenize("$month/${year.takeLast(2)}") }
 
             bt.tokenize(cardExpElement.format("MM-yyyy"))
-            verify { tokenizeApi.tokenize("$month-$year") }
+            verify { tokensApi.tokenize("$month-$year") }
         }
 
     @Test
     fun `tokenize should replace Element refs within request object with underlying data values`() =
         runBlocking {
-            every { provider.getTokenizeApi(any()) } returns tokenizeApi
+            every { provider.getTokensApi(any()) } returns tokensApi
 
             val name = faker.name().fullName()
             nameElement.setText(name)
@@ -385,12 +411,12 @@ class BasisTheoryElementsTests {
                 )
             )
 
-            verify { tokenizeApi.tokenize(expectedRequest) }
+            verify { tokensApi.tokenize(expectedRequest) }
         }
 
     @Test
     fun `tokenize should respect getValueType type when sending values to the API`() = runBlocking {
-        every { provider.getTokenizeApi(any()) } returns tokenizeApi
+        every { provider.getTokensApi(any()) } returns tokensApi
 
         val testString = faker.name().firstName()
         val testInt = faker.number().numberBetween(1, 10)
@@ -400,22 +426,22 @@ class BasisTheoryElementsTests {
         // individual
         textElement.setText(testString)
         bt.tokenize(textElement)
-        verify { tokenizeApi.tokenize(testString) }
+        verify { tokensApi.tokenize(testString) }
 
         intElement.setText(testInt.toString())
         intElement.getValueType = ElementValueType.INTEGER
         bt.tokenize(intElement)
-        verify { tokenizeApi.tokenize(testInt) }
+        verify { tokensApi.tokenize(testInt) }
 
         doubleElement.setText(testDouble.toString())
         doubleElement.getValueType = ElementValueType.DOUBLE
         bt.tokenize(doubleElement)
-        verify { tokenizeApi.tokenize(testDouble) }
+        verify { tokensApi.tokenize(testDouble) }
 
         boolElement.setText(testBoolean.toString())
         boolElement.getValueType = ElementValueType.BOOLEAN
         bt.tokenize(boolElement)
-        verify { tokenizeApi.tokenize(testBoolean) }
+        verify { tokensApi.tokenize(testBoolean) }
 
         // grouped
         val request = object {
@@ -439,7 +465,7 @@ class BasisTheoryElementsTests {
                 "bool" to testBoolean
             )
         )
-        verify { tokenizeApi.tokenize(expectedRequest) }
+        verify { tokensApi.tokenize(expectedRequest) }
     }
 
     @Test
@@ -447,6 +473,7 @@ class BasisTheoryElementsTests {
         val apiKeyOverride = UUID.randomUUID().toString()
 
         every { provider.getTokensApi(any()) } returns tokensApi
+        every { tokensApi.create(any()) } returns fakeToken()
 
         bt.createToken(CreateTokenRequest(type = "token", data = ""), apiKeyOverride)
 
@@ -457,6 +484,7 @@ class BasisTheoryElementsTests {
     fun `createToken should forward top level primitive value without modification`() =
         runBlocking {
             every { provider.getTokensApi(any()) } returns tokensApi
+            every { tokensApi.create(any()) } returns fakeToken()
 
             val name = faker.name().fullName()
             val createTokenRequest = createTokenRequest(name)
@@ -469,6 +497,7 @@ class BasisTheoryElementsTests {
     fun `createToken should forward complex data values within request without modification`() =
         runBlocking {
             every { provider.getTokensApi(any()) } returns tokensApi
+            every { tokensApi.create(any()) } returns fakeToken()
 
             val data = object {
                 val string = faker.lorem().word()
@@ -517,6 +546,7 @@ class BasisTheoryElementsTests {
     fun `createToken should replace top level TextElement ref with underlying data value`() =
         runBlocking {
             every { provider.getTokensApi(any()) } returns tokensApi
+            every { tokensApi.create(any()) } returns fakeToken()
 
             val name = faker.name().fullName()
             nameElement.setText(name)
@@ -534,6 +564,7 @@ class BasisTheoryElementsTests {
     fun `createToken should replace top level CardElement ref with underlying data value`() =
         runBlocking {
             every { provider.getTokensApi(any()) } returns tokensApi
+            every { tokensApi.create(any()) } returns fakeToken()
 
             val cardNumber = testCardNumbers.random()
             cardNumberElement.setText(cardNumber)
@@ -551,6 +582,7 @@ class BasisTheoryElementsTests {
     fun `createToken should replace top level CardExpirationDateElement refs with underlying data value`() =
         runBlocking {
             every { provider.getTokensApi(any()) } returns tokensApi
+            every { tokensApi.create(any()) } returns fakeToken()
 
             val expDate = LocalDate.now().plus(2, ChronoUnit.YEARS)
             val month = expDate.monthValue.toString().padStart(2, '0')
@@ -575,6 +607,7 @@ class BasisTheoryElementsTests {
     fun `createToken should replace Element refs within request object with underlying data values`() =
         runBlocking {
             every { provider.getTokensApi(any()) } returns tokensApi
+            every { tokensApi.create(any()) } returns fakeToken()
 
             val name = faker.name().fullName()
             nameElement.setText(name)
@@ -651,6 +684,8 @@ class BasisTheoryElementsTests {
     fun `createToken should respect getValueType type when sending values to the API`() =
         runBlocking {
             every { provider.getTokensApi(any()) } returns tokensApi
+            every { tokensApi.create(any()) } returns fakeToken()
+
 
             val testString = faker.name().firstName()
             val testInt = faker.number().numberBetween(1, 10)
@@ -721,20 +756,14 @@ class BasisTheoryElementsTests {
             body = data
         }
 
-        val callSlot = slot<Call>()
-        every { apiClient.execute<Any>(capture(callSlot), any()) } returns ApiResponse(
-            200,
-            emptyMap(),
-            "Hello World"
-        )
-
+        val requestSlot = setupProxyMocks()
         val result = runBlocking {
             testProxyApi.post(proxyRequest)
         }
 
-        verify(exactly = 1) { apiClient.execute<Any>(any(), any()) }
+        verify(exactly = 1) { mockHttpClient.newCall(any()) }
 
-        expectThat(callSlot.captured.request()) {
+        expectThat(requestSlot.captured) {
             get { headers["BT-PROXY-URL"] }.isEqualTo("https://echo.basistheory.com/post")
             get { body?.contentType()?.type }.isEqualTo("application")
             get { body?.contentType()?.subtype }.isEqualTo("json")
@@ -765,20 +794,15 @@ class BasisTheoryElementsTests {
             body = nameElement
         }
 
-        val callSlot = slot<Call>()
-        every { apiClient.execute<Any>(capture(callSlot), any()) } returns ApiResponse(
-            200,
-            emptyMap(),
-            "Hello World"
-        )
+        val requestSlot = setupProxyMocks()
 
         val result = runBlocking {
             testProxyApi.post(proxyRequest)
         }
 
-        verify(exactly = 1) { apiClient.execute<Any>(any(), any()) }
+        verify(exactly = 1) { mockHttpClient.newCall(any()) }
 
-        expectThat(callSlot.captured.request()) {
+        expectThat(requestSlot.captured) {
             get { headers["BT-PROXY-URL"] }.isEqualTo("https://echo.basistheory.com/post")
             get { body?.contentType()?.type }.isEqualTo("text")
             get { body?.contentType()?.subtype }.isEqualTo("plain")
@@ -809,20 +833,15 @@ class BasisTheoryElementsTests {
             body = cardNumberElement
         }
 
-        val callSlot = slot<Call>()
-        every { apiClient.execute<Any>(capture(callSlot), any()) } returns ApiResponse(
-            200,
-            emptyMap(),
-            "Hello World"
-        )
+        val requestSlot = setupProxyMocks()
 
         val result = runBlocking {
             testProxyApi.post(proxyRequest)
         }
 
-        verify(exactly = 1) { apiClient.execute<Any>(any(), any()) }
+        verify(exactly = 1) { mockHttpClient.newCall(any()) }
 
-        expectThat(callSlot.captured.request()) {
+        expectThat(requestSlot.captured) {
             get { headers["BT-PROXY-URL"] }.isEqualTo("https://echo.basistheory.com/post")
             get { body?.contentType()?.type }.isEqualTo("text")
             get { body?.contentType()?.subtype }.isEqualTo("plain")
@@ -856,20 +875,16 @@ class BasisTheoryElementsTests {
             body = cardExpElement
         }
 
-        val callSlot = slot<Call>()
-        every { apiClient.execute<Any>(capture(callSlot), any()) } returns ApiResponse(
-            200,
-            emptyMap(),
-            "Hello World"
-        )
+        val requestSlot = setupProxyMocks()
 
         val result = runBlocking {
             testProxyApi.post(proxyRequest)
         }
 
-        verify(exactly = 1) { apiClient.execute<Any>(any(), any()) }
+        verify(exactly = 1) { mockHttpClient.newCall(any()) }
 
-        expectThat(callSlot.captured.request()) {
+
+        expectThat(requestSlot.captured) {
             get { headers["BT-PROXY-URL"] }.isEqualTo("https://echo.basistheory.com/post")
             get { body?.contentType()?.type }.isEqualTo("text")
             get { body?.contentType()?.subtype }.isEqualTo("plain")
@@ -924,11 +939,12 @@ class BasisTheoryElementsTests {
     @Test
     fun `tokenize throws com_basistheory_android_model_exceptions_ApiException when an exception occurs`(): Unit =
         runBlocking {
-            every { provider.getTokenizeApi(any()) } returns tokenizeApi
+            every { provider.getTokensApi(any()) } returns tokensApi
 
-            every { tokenizeApi.tokenize(any()) } throws com.basistheory.ApiException(
+            every { tokensApi.tokenize(any()) } throws com.basistheory.core.BasisTheoryApiApiException(
+                "Api Error",
                 401,
-                "API Error"
+                ""
             )
 
             val name = faker.name().fullName()
@@ -945,7 +961,11 @@ class BasisTheoryElementsTests {
         runBlocking {
             every { provider.getTokensApi(any()) } returns tokensApi
 
-            every { tokensApi.create(any()) } throws com.basistheory.ApiException(401, "API Error")
+            every { tokensApi.create(any()) } throws com.basistheory.core.BasisTheoryApiApiException(
+                "Api Error",
+                401,
+                ""
+            )
 
             val createTokenRequest = CreateTokenRequest(type = "token", data = "")
 
@@ -966,7 +986,11 @@ class BasisTheoryElementsTests {
         runBlocking {
             every { provider.getTokensApi(any()) } returns tokensApi
 
-            every { tokensApi.getById(any()) } throws com.basistheory.ApiException(401, "API Error")
+            every { tokensApi.get(any()) } throws com.basistheory.core.BasisTheoryApiApiException(
+                "Api Error",
+                401,
+                ""
+            )
 
             expectCatching {
                 bt.getToken(
@@ -985,7 +1009,11 @@ class BasisTheoryElementsTests {
         runBlocking {
             every { provider.getSessionsApi(any()) } returns sessionsApi
 
-            every { sessionsApi.create() } throws com.basistheory.ApiException(401, "API Error")
+            every { sessionsApi.create() } throws com.basistheory.core.BasisTheoryApiApiException(
+                "Api Error",
+                401,
+                ""
+            )
 
             expectCatching { bt.createSession(apiKeyOverride = faker.name().firstName()) }
                 .isFailure()
@@ -997,6 +1025,7 @@ class BasisTheoryElementsTests {
     @Test
     fun `createSession should call java SDK without api key override`() = runBlocking {
         every { provider.getSessionsApi(any()) } returns sessionsApi
+        every { sessionsApi.create() } returns fakeSession()
 
         bt.createSession()
 
@@ -1007,8 +1036,8 @@ class BasisTheoryElementsTests {
     @Test
     fun `createSession should call java SDK with api key override`() = runBlocking {
         val apiKeyOverride = UUID.randomUUID().toString()
-
         every { provider.getSessionsApi(any()) } returns sessionsApi
+        every { sessionsApi.create() } returns fakeSession()
 
         bt.createSession(apiKeyOverride)
 
@@ -1021,12 +1050,12 @@ class BasisTheoryElementsTests {
         val tokenId = UUID.randomUUID().toString()
 
         every { provider.getTokensApi(any()) } returns tokensApi
-        every { tokensApi.getById(tokenId) } returns fakeToken()
+        every { tokensApi.get(tokenId) } returns fakeToken()
 
         bt.getToken(tokenId)
 
         verify { provider.getTokensApi() }
-        verify { tokensApi.getById(tokenId) }
+        verify { tokensApi.get(tokenId) }
     }
 
     @Test
@@ -1035,12 +1064,12 @@ class BasisTheoryElementsTests {
         val apiKeyOverride = UUID.randomUUID().toString()
 
         every { provider.getTokensApi(any()) } returns tokensApi
-        every { tokensApi.getById(tokenId) } returns fakeToken()
+        every { tokensApi.get(tokenId) } returns fakeToken()
 
         bt.getToken(tokenId, apiKeyOverride)
 
         verify { provider.getTokensApi(apiKeyOverride) }
-        verify { tokensApi.getById(tokenId) }
+        verify { tokensApi.get(tokenId) }
     }
 
     @Test
@@ -1077,14 +1106,34 @@ class BasisTheoryElementsTests {
         verify { tokensApi.create(any()) wasNot Called }
     }
 
-    private fun fakeToken(): Token =
-        Token().apply {
-            id = UUID.randomUUID().toString()
-            tenantId = UUID.randomUUID()
-            type = "token"
-            data = Faker.instance().name().firstName()
-            createdBy = UUID.randomUUID()
-            createdAt = OffsetDateTime.now()
-            containers = mutableListOf("/general")
-        }
+    private fun fakeToken(): com.basistheory.types.Token =
+        com.basistheory.types.Token.builder()
+            .tenantId(UUID.randomUUID().toString())
+            .type("token")
+            .data(Faker.instance().name().firstName())
+            .createdBy(UUID.randomUUID().toString())
+            .createdAt(OffsetDateTime.now())
+            .containers(mutableListOf("/general"))
+            .build()
+
+
+    private fun fakeSession(): com.basistheory.types.CreateSessionResponse =
+        com.basistheory.types.CreateSessionResponse.builder()
+            .sessionKey(UUID.randomUUID().toString())
+            .nonce(UUID.randomUUID().toString())
+            .expiresAt(OffsetDateTime.now().plusHours(1))
+            .build()
+
+
+    private fun setupProxyMocks(requestSlot: CapturingSlot<Request> = slot()):
+            CapturingSlot<Request> {
+        every { mockHttpClient.newCall(capture(requestSlot)) } returns mockCall
+        every { mockCall.execute() } returns mockResponse
+        every { mockResponse.body } returns mockResponseBody
+        every { mockResponseBody.string() } returns "\"Hello World\""
+        every { mockResponse.header(any()) } returns null
+        every { mockResponse.close() } just Runs
+
+        return requestSlot
+    }
 }

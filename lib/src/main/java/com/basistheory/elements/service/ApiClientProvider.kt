@@ -1,12 +1,8 @@
 package com.basistheory.elements.service
 
-import com.basistheory.ApiClient
-import com.basistheory.Configuration
-import com.basistheory.SessionsApi
-import com.basistheory.TokenizeApi
-import com.basistheory.TokensApi
-import com.basistheory.elements.BuildConfig
-import com.basistheory.auth.ApiKeyAuth
+import com.basistheory.BasisTheoryApiClient
+import com.basistheory.resources.sessions.SessionsClient
+import com.basistheory.resources.tokens.TokensClient
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 
@@ -14,32 +10,22 @@ internal class ApiClientProvider(
     private val apiUrl: String = "https://api.basistheory.com",
     private val defaultApiKey: String? = null
 ) {
+    fun getTokensApi(apiKeyOverride: String? = null): TokensClient =
+        getApiClient(apiKeyOverride).tokens()
 
-    fun getTokenizeApi(apiKeyOverride: String? = null): TokenizeApi =
-        TokenizeApi(getApiClient(apiKeyOverride))
+    fun getSessionsApi(apiKeyOverride: String? = null): SessionsClient =
+        getApiClient(apiKeyOverride).sessions()
 
-    fun getTokensApi(apiKeyOverride: String? = null): TokensApi =
-        TokensApi(getApiClient(apiKeyOverride))
+    fun getProxyApi(dispatcher: CoroutineDispatcher = Dispatchers.IO): ProxyApi {
+        requireNotNull(defaultApiKey)
 
-    fun getSessionsApi(apiKeyOverride: String? = null): SessionsApi =
-        SessionsApi(getApiClient(apiKeyOverride))
+       return ProxyApi(dispatcher, apiUrl, defaultApiKey)
+    }
 
-    fun getProxyApi(dispatcher: CoroutineDispatcher = Dispatchers.IO): ProxyApi =
-        ProxyApi(dispatcher, ::getApiClient)
-
-    private fun getApiClient(apiKeyOverride: String? = null): ApiClient {
+    private fun getApiClient(apiKeyOverride: String? = null): BasisTheoryApiClient {
         val apiKey = apiKeyOverride ?: defaultApiKey
         requireNotNull(apiKey)
 
-        return Configuration.getDefaultApiClient().also { client ->
-            client.basePath = apiUrl
-
-            val userAgent = "android-elements/${BuildConfig.VERSION_NAME} ${System.getProperty("http.agent") ?: ""}".trim()
-            client.setUserAgent(userAgent)
-
-            (client.getAuthentication("ApiKey") as ApiKeyAuth).also { auth ->
-                auth.apiKey = apiKey
-            }
-        }
+        return BasisTheoryApiClient.builder().apiKey(apiKey).url(apiUrl).build()
     }
 }

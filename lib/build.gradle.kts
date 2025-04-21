@@ -34,6 +34,10 @@ android {
             )
         }
     }
+    kotlinOptions {
+        jvmTarget = "17"
+    }
+
     compileOptions {
         isCoreLibraryDesugaringEnabled = true
 
@@ -79,9 +83,7 @@ dependencies {
     implementation(libs.kotlinx.coroutines.android)
     implementation(libs.commons.lang3)
     implementation(libs.threetenbp)
-    implementation(libs.basistheory.java) {
-        exclude(group = "javax.ws.rs", module = "javax.ws.rs-api")
-    }
+    implementation(libs.basistheory.javaSdk)
     implementation(libs.okhttp)
     implementation(libs.gson)
     testImplementation(libs.junit)

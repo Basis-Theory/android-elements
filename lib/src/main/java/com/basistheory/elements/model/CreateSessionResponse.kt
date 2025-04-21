@@ -10,9 +10,9 @@ class CreateSessionResponse(
     var expiresAt: OffsetDateTime
 )
 
-internal fun com.basistheory.CreateSessionResponse.toAndroid(): CreateSessionResponse =
+internal fun com.basistheory.types.CreateSessionResponse.toAndroid(): CreateSessionResponse =
     CreateSessionResponse(
-        this.sessionKey!!,
-        this.nonce!!,
-        this.expiresAt!!
+        this.sessionKey!!.toString(),
+        this.nonce!!.toString(),
+        this.expiresAt.get()
     )
