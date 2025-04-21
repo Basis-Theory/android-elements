@@ -1,5 +1,8 @@
 package com.basistheory.elements.model
 
+import java.util.Optional
+
+
 class CreateTokenRequest(
     var id: String? = null,
 
@@ -15,23 +18,23 @@ class CreateTokenRequest(
 
     var expiresAt: String? = null,
 
-    var metadata: Map<String, String>? = null,
+    var metadata: Map<String, Optional<String>>? = null,
 
     var containers: List<String>? = null,
 
     var searchIndexes: List<String>? = null,
 )
 
-internal fun CreateTokenRequest.toJava(): com.basistheory.CreateTokenRequest =
-    com.basistheory.CreateTokenRequest().apply {
-        this.id = this@toJava.id
-        this.data = this@toJava.data
-        this.type = this@toJava.type
-        this.mask = this@toJava.mask
-        this.fingerprintExpression = this@toJava.fingerprintExpression
-        this.deduplicateToken = this@toJava.deduplicateToken
-        this.expiresAt = this@toJava.expiresAt
-        this.metadata = this@toJava.metadata
-        this.containers = this@toJava.containers
-        this.searchIndexes = this@toJava.searchIndexes
-    }
+internal fun CreateTokenRequest.toJava(): com.basistheory.resources.tokens.requests.CreateTokenRequest =
+    com.basistheory.resources.tokens.requests.CreateTokenRequest.builder()
+        .id(this@toJava.id)
+        .data(this@toJava.data)
+        .type(this@toJava.type)
+        .mask(this@toJava.mask)
+        .fingerprintExpression(this@toJava.fingerprintExpression)
+        .deduplicateToken(this@toJava.deduplicateToken)
+        .expiresAt(this@toJava.expiresAt)
+        .metadata(this@toJava.metadata)
+        .containers(this@toJava.containers)
+        .searchIndexes(this@toJava.searchIndexes)
+        .build()

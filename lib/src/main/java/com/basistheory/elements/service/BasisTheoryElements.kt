@@ -14,6 +14,7 @@ import com.basistheory.elements.util.getElementsValues
 import com.basistheory.elements.util.replaceElementRefs
 import com.basistheory.elements.util.tryGetTextToTokenize
 import com.basistheory.elements.view.TextElement
+import com.fasterxml.jackson.databind.ObjectMapper
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -29,13 +30,13 @@ class BasisTheoryElements internal constructor(
     suspend fun tokenize(body: Any, apiKeyOverride: String? = null): Any =
         try {
             withContext(dispatcher) {
-                val tokenizeApiClient = apiClientProvider.getTokenizeApi(apiKeyOverride)
+                val tokenizeApiClient = apiClientProvider.getTokensApi(apiKeyOverride)
                 val request = getElementsValues(body)
 
                 tokenizeApiClient.tokenize(request)
             }
-        } catch (e: com.basistheory.ApiException) {
-            throw ApiException(e.code, e.responseHeaders, e.responseBody, e.message)
+        } catch (e: com.basistheory.core.BasisTheoryApiApiException) {
+            throw ApiException(e.statusCode(), e.headers(), e.body().toString(), e.message)
         }
 
     @JvmOverloads
@@ -58,8 +59,8 @@ class BasisTheoryElements internal constructor(
 
                 tokensApi.create(createTokenRequest.toJava()).toAndroid()
             }
-        } catch (e: com.basistheory.ApiException) {
-            throw ApiException(e.code, e.responseHeaders, e.responseBody, e.message)
+        } catch (e: com.basistheory.core.BasisTheoryApiApiException) {
+            throw ApiException(e.statusCode(), e.headers(), e.body().toString(), e.message)
         }
 
     @JvmOverloads
@@ -69,8 +70,8 @@ class BasisTheoryElements internal constructor(
                 val sessionsApi = apiClientProvider.getSessionsApi(apiKeyOverride)
                 sessionsApi.create().toAndroid()
             }
-        } catch (e: com.basistheory.ApiException) {
-            throw ApiException(e.code, e.responseHeaders, e.responseBody, e.message)
+        } catch (e: com.basistheory.core.BasisTheoryApiApiException) {
+            throw ApiException(e.statusCode(), e.headers(), e.body().toString(), e.message)
         }
 
     @JvmOverloads
@@ -81,13 +82,12 @@ class BasisTheoryElements internal constructor(
         try {
             withContext(dispatcher) {
                 val tokensApi = apiClientProvider.getTokensApi(apiKeyOverride)
-
-                tokensApi.getById(id).also {
+                tokensApi.get(id).toAndroid().also {
                     it.data = transformResponseToValueReferences(it.data)
-                }.toAndroid()
+                }
             }
-        } catch (e: com.basistheory.ApiException) {
-            throw ApiException(e.code, e.responseHeaders, e.responseBody, e.message)
+        } catch (e: com.basistheory.core.BasisTheoryApiApiException) {
+            throw ApiException(e.statusCode(), e.headers(), e.body().toString(), e.message)
         }
 
     companion object {

@@ -8,6 +8,7 @@ import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.RequestBody
 import okhttp3.RequestBody.Companion.toRequestBody
 import java.io.IOException
+import java.util.Optional
 
 fun transformResponseToValueReferences(data: Any?): Any? =
     if (data == null) null
@@ -16,6 +17,8 @@ fun transformResponseToValueReferences(data: Any?): Any? =
         (data as Array<*>).map { transformResponseToValueReferences(it) }
     } else if (data is Collection<*>) {
         data.map { transformResponseToValueReferences(it) }
+    } else if (data is Optional<*>) {
+       transformResponseToValueReferences(data.orElse(null))
     } else {
         val map = (data as Map<*, *>).toMutableMap()
         map.forEach { (key, value) -> map[key] = transformResponseToValueReferences(value) }
