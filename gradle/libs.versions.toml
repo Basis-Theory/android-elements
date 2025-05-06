@@ -26,6 +26,8 @@ okhttp = "4.11.0"
 robolectric = "4.13"
 striktCore = "0.34.1"
 threetenbp = "1.6.8"
+jose_jwt = "10.2"
+cryptotink = "1.17.0"
 
 [libraries]
 android-gif-drawable = { module = "pl.droidsonroids.gif:android-gif-drawable", version.ref = "androidGifDrawable" }
@@ -64,6 +66,9 @@ okhttp = { module = "com.squareup.okhttp3:okhttp", version.ref = "okhttp" }
 robolectric = { module = "org.robolectric:robolectric", version.ref = "robolectric" }
 strikt-core = { module = "io.strikt:strikt-core", version.ref = "striktCore" }
 threetenbp = { module = "org.threeten:threetenbp", version.ref = "threetenbp" }
+jose_jwt = { module = "com.nimbusds:nimbus-jose-jwt", version.ref = "jose_jwt"}
+cryptotink = { module = "com.google.crypto.tink:tink", version.ref = "cryptotink"}
+
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "androidGradlePlugin" }

@@ -84,6 +84,8 @@ dependencies {
     }
     implementation(libs.okhttp)
     implementation(libs.gson)
+    implementation(libs.jose.jwt)
+    implementation(libs.cryptotink)
     testImplementation(libs.junit)
     testImplementation(libs.junitparams)
     testImplementation(libs.robolectric)
