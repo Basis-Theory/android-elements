@@ -14,9 +14,9 @@ object EncryptionConstants {
     const val ENCRYPTION_ALGORITHM = "A256GCM"
 }
 
-class JWEEncryption(private val publicKey: String) {
+object JWEEncryption {
     
-    fun encrypt(payload: String): String {
+    fun encrypt(payload: String, publicKey: String): String {
         // Create JWK from the base64 encoded public key
         val jwk = OctetKeyPair.Builder(Curve.X25519, Base64URL.from(publicKey))
             .algorithm(Algorithm.parse(EncryptionConstants.ALGORITHM))

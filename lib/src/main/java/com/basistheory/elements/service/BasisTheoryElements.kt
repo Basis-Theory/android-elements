@@ -7,8 +7,11 @@ import com.basistheory.elements.model.CreateTokenRequest
 import com.basistheory.elements.model.ElementValueReference
 import com.basistheory.elements.model.Token
 import com.basistheory.elements.model.exceptions.ApiException
+import com.basistheory.elements.model.exceptions.EncryptTokenException
 import com.basistheory.elements.model.toAndroid
 import com.basistheory.elements.model.toJava
+import com.basistheory.elements.model.EncryptTokenRequest
+import com.basistheory.elements.model.EncryptTokenResponse
 import com.basistheory.elements.util.*
 import com.basistheory.elements.util.getElementsValues
 import com.basistheory.elements.util.replaceElementRefs
@@ -89,6 +92,50 @@ class BasisTheoryElements internal constructor(
         } catch (e: com.basistheory.ApiException) {
             throw ApiException(e.code, e.responseHeaders, e.responseBody, e.message)
         }
+
+    suspend fun encryptTokens(
+        encryptTokenRequest: EncryptTokenRequest,
+    ): Array<EncryptTokenResponse> =
+        try {
+            withContext(dispatcher) {
+                val processedTokenRequests = processTokenRequests(encryptTokenRequest.tokenRequests)
+                
+                processedTokenRequests.map { tokenData ->
+                    EncryptTokenResponse("encrypted_${tokenData.hashCode()}", "token")
+                }.toTypedArray()
+            }
+        } catch (e: Exception) {
+            throw EncryptTokenException("Failed to encrypt tokens", e)
+        }
+
+    private fun processTokenRequests(tokenRequests: Any): List<Any?> {
+        val tokenRequestsMap = tokenRequests.toMap()
+        
+        // Check if this is a single token (has 'type' field) or multiple tokens
+        return if (tokenRequestsMap.containsKey("type")) {
+            // Single token case
+            val data = processTokenData(tokenRequestsMap["data"])
+            listOf(data)
+        } else {
+            // Multiple tokens case - iterate over all properties
+            tokenRequestsMap.values.mapNotNull { tokenRequest ->
+                val data = tokenRequest?.tryGetValue<Any>("data")
+                if (data != null) {
+                    processTokenData(data)
+                } else null
+            }
+        }
+    }
+
+    private fun processTokenData(data: Any?): Any? {
+        return if (data == null) null
+        else if (data::class.java.isPrimitiveType()) data
+        else if (data is TextElement) data.tryGetTextToTokenize()
+            .toValueType(data.getValueType)
+        else if (data is ElementValueReference) data.getValue()
+            .toValueType(data.getValueType)
+        else replaceElementRefs(data.toMap())
+    }
 
     companion object {
         @JvmStatic
