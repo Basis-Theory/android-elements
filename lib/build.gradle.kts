@@ -115,6 +115,21 @@ configurations.all {
                 "io.netty:netty-handler" -> {
                     useVersion("4.1.118.Final")
                 }
+                "io.netty:netty-codec-http2" -> {
+                    useVersion("4.1.118.Final")
+                }
+                "io.netty:netty-common" -> {
+                    useVersion("4.1.118.Final")
+                }
+                "io.netty:netty-buffer" -> {
+                    useVersion("4.1.118.Final")
+                }
+                "io.netty:netty-transport" -> {
+                    useVersion("4.1.118.Final")
+                }
+                "io.netty:netty-codec" -> {
+                    useVersion("4.1.118.Final")
+                }
             }
         }
     }
