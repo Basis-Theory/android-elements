@@ -79,6 +79,18 @@ dependencies {
     coreLibraryDesugaring(libs.desugar.jdk.libs)
 }
 
+configurations.all {
+    resolutionStrategy {
+        eachDependency {
+            when (requested.module.toString()) {
+                "io.netty:netty-handler" -> {
+                    useVersion("4.1.118.Final")
+                }
+            }
+        }
+    }
+}
+
 fun tryFindProperty(name: String): String {
     val localProperties = tryReadLocalProperties()
     val propertyValue = localProperties[name] ?: findProperty(name)
