@@ -112,6 +112,9 @@ configurations.all {
                     }
                     useVersion("2.15.0-rc1")
                 }
+                "io.netty:netty-handler" -> {
+                    useVersion("4.1.118.Final")
+                }
             }
         }
     }
