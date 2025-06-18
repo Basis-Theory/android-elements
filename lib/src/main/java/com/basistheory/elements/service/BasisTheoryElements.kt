@@ -5,16 +5,19 @@ import com.basistheory.elements.constants.ElementValueType
 import com.basistheory.elements.model.CreateSessionResponse
 import com.basistheory.elements.model.CreateTokenRequest
 import com.basistheory.elements.model.ElementValueReference
+import com.basistheory.elements.model.EncryptTokenRequest
+import com.basistheory.elements.model.EncryptTokenResponse
 import com.basistheory.elements.model.Token
 import com.basistheory.elements.model.exceptions.ApiException
 import com.basistheory.elements.model.exceptions.EncryptTokenException
 import com.basistheory.elements.model.toAndroid
 import com.basistheory.elements.model.toJava
-import com.basistheory.elements.model.EncryptTokenRequest
-import com.basistheory.elements.model.EncryptTokenResponse
-import com.basistheory.elements.util.*
+import com.basistheory.elements.util.JWEEncryption
 import com.basistheory.elements.util.getElementsValues
+import com.basistheory.elements.util.isPrimitiveType
 import com.basistheory.elements.util.replaceElementRefs
+import com.basistheory.elements.util.toMap
+import com.basistheory.elements.util.transformResponseToValueReferences
 import com.basistheory.elements.util.tryGetTextToTokenize
 import com.basistheory.elements.view.TextElement
 import kotlinx.coroutines.CoroutineDispatcher
@@ -93,37 +96,55 @@ class BasisTheoryElements internal constructor(
             throw ApiException(e.code, e.responseHeaders, e.responseBody, e.message)
         }
 
-    suspend fun encryptTokens(
+    fun encryptTokens(
         encryptTokenRequest: EncryptTokenRequest,
     ): Array<EncryptTokenResponse> =
         try {
-            withContext(dispatcher) {
-                val processedTokenRequests = processTokenRequests(encryptTokenRequest.tokenRequests)
-                
-                processedTokenRequests.map { tokenData ->
-                    EncryptTokenResponse("encrypted_${tokenData.hashCode()}", "token")
-                }.toTypedArray()
-            }
+            val processedTokenRequests = processTokenRequests(encryptTokenRequest.tokenRequests)
+
+            processedTokenRequests.map { tokenData ->
+                val encrypted = JWEEncryption.encrypt(
+                    tokenData.first,
+                    encryptTokenRequest.publicKey,
+                    encryptTokenRequest.keyId
+                )
+                EncryptTokenResponse(encrypted, tokenData.second)
+            }.toTypedArray()
+        } catch (e: IllegalArgumentException) {
+            throw e
         } catch (e: Exception) {
             throw EncryptTokenException("Failed to encrypt tokens", e)
         }
 
-    private fun processTokenRequests(tokenRequests: Any): List<Any?> {
+    private fun processTokenRequests(tokenRequests: Any): List<Pair<Any, String>> {
         val tokenRequestsMap = tokenRequests.toMap()
-        
-        // Check if this is a single token (has 'type' field) or multiple tokens
-        return if (tokenRequestsMap.containsKey("type")) {
-            // Single token case
-            val data = processTokenData(tokenRequestsMap["data"])
-            listOf(data)
-        } else {
-            // Multiple tokens case - iterate over all properties
-            tokenRequestsMap.values.mapNotNull { tokenRequest ->
-                val data = tokenRequest?.tryGetValue<Any>("data")
-                if (data != null) {
-                    processTokenData(data)
-                } else null
-            }
+
+        val isSingleTokenRequest = tokenRequestsMap.containsKey("type")
+        if (isSingleTokenRequest) {
+            return listOf(processIndividualTokenRequest(tokenRequestsMap))
+        }
+
+        return processMultipleTokenRequests(tokenRequestsMap)
+    }
+
+    private fun processMultipleTokenRequests(tokenRequestsMap: Map<String, Any?>): List<Pair<Any, String>> {
+        return tokenRequestsMap.values.map { tokenRequest ->
+            processIndividualTokenRequest(tokenRequest?.toMap())
+        }
+    }
+
+    private fun processIndividualTokenRequest(tokenRequest: Any?): Pair<Any, String> {
+        val rawData = tokenRequest?.tryGetValue<Any>("data")
+        val rawType = tokenRequest?.tryGetValue<String>("type")
+
+        validateTokenRequestFields(rawData, rawType)
+
+        return Pair(processTokenData(rawData)!!, rawType!!)
+    }
+
+    private fun validateTokenRequestFields(data: Any?, type: String?) {
+        if (data == null || type == null) {
+            throw IllegalArgumentException("Both token data and type must be provided")
         }
     }
 
