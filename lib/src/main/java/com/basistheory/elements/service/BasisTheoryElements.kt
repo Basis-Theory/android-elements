@@ -117,18 +117,15 @@ class BasisTheoryElements internal constructor(
         }
 
     private fun processTokenRequests(tokenRequests: Any): List<Pair<Any, String>> {
-        val tokenRequestsMap = tokenRequests.toMap()
-
-        val isSingleTokenRequest = tokenRequestsMap.containsKey("type")
-        if (isSingleTokenRequest) {
-            return listOf(processIndividualTokenRequest(tokenRequestsMap))
+        return tokenRequests.toMap().let {
+            it.takeIf { "type" in it }?.let {
+                listOfNotNull(processIndividualTokenRequest(it))
+            } ?: processMultipleTokenRequests(it)
         }
-
-        return processMultipleTokenRequests(tokenRequestsMap)
     }
 
     private fun processMultipleTokenRequests(tokenRequestsMap: Map<String, Any?>): List<Pair<Any, String>> {
-        return tokenRequestsMap.values.map { tokenRequest ->
+        return tokenRequestsMap.values.mapNotNull { tokenRequest ->
             processIndividualTokenRequest(tokenRequest?.toMap())
         }
     }
@@ -143,19 +140,15 @@ class BasisTheoryElements internal constructor(
     }
 
     private fun validateTokenRequestFields(data: Any?, type: String?) {
-        if (data == null || type == null) {
-            throw IllegalArgumentException("Both token data and type must be provided")
-        }
+        requireNotNull(data) { "Token data must be provided" }
+        requireNotNull(type) { "Token type must be provided" }
     }
 
-    private fun processTokenData(data: Any?): Any? {
-        return if (data == null) null
-        else if (data::class.java.isPrimitiveType()) data
-        else if (data is TextElement) data.tryGetTextToTokenize()
-            .toValueType(data.getValueType)
-        else if (data is ElementValueReference) data.getValue()
-            .toValueType(data.getValueType)
-        else replaceElementRefs(data.toMap())
+    private fun processTokenData(data: Any?): Any? = when (data) {
+        null -> null
+        is TextElement -> data.tryGetTextToTokenize().toValueType(data.getValueType)
+        is ElementValueReference -> data.getValue().toValueType(data.getValueType)
+        else -> if (data::class.java.isPrimitiveType()) data else replaceElementRefs(data.toMap())
     }
 
     companion object {

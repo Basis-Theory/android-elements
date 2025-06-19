@@ -1158,7 +1158,7 @@ class BasisTheoryElementsTests {
             .isFailure()
             .isA<IllegalArgumentException>()
             .and {
-                get { message }.isEqualTo("Both token data and type must be provided")
+                get { message }.isEqualTo("Token data must be provided")
             }
     }
 
@@ -1179,7 +1179,7 @@ class BasisTheoryElementsTests {
             .isFailure()
             .isA<IllegalArgumentException>()
             .and {
-                get { message }.isEqualTo("Both token data and type must be provided")
+                get { message }.isEqualTo("Token type must be provided")
             }
     }
 
