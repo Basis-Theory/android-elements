@@ -31,5 +31,9 @@
         <item
             android:id="@+id/nav_dual_write"
             android:title="@string/title_dual_write" />
+
+        <item
+            android:id="@+id/nav_encrypt_tokens"
+            android:title="@string/title_encrypt_token" />
     </group>
 </menu>

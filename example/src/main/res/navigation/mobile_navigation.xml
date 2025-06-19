@@ -53,4 +53,10 @@
         android:label="@string/title_dual_write"
         tools:layout="@layout/fragment_dual_write" />
 
+    <fragment
+        android:id="@+id/nav_encrypt_tokens"
+        android:name="com.basistheory.elements.example.view.encrypt_token.EncryptTokenFragment"
+        android:label="@string/title_encrypt_token"
+        tools:layout="@layout/fragment_encrypt_token" />
+
 </navigation>
