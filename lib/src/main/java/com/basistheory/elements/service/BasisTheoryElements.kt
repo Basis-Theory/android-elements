@@ -5,13 +5,19 @@ import com.basistheory.elements.constants.ElementValueType
 import com.basistheory.elements.model.CreateSessionResponse
 import com.basistheory.elements.model.CreateTokenRequest
 import com.basistheory.elements.model.ElementValueReference
+import com.basistheory.elements.model.EncryptTokenRequest
+import com.basistheory.elements.model.EncryptTokenResponse
 import com.basistheory.elements.model.Token
 import com.basistheory.elements.model.exceptions.ApiException
+import com.basistheory.elements.model.exceptions.EncryptTokenException
 import com.basistheory.elements.model.toAndroid
 import com.basistheory.elements.model.toJava
-import com.basistheory.elements.util.*
+import com.basistheory.elements.util.JWEEncryption
 import com.basistheory.elements.util.getElementsValues
+import com.basistheory.elements.util.isPrimitiveType
 import com.basistheory.elements.util.replaceElementRefs
+import com.basistheory.elements.util.toMap
+import com.basistheory.elements.util.transformResponseToValueReferences
 import com.basistheory.elements.util.tryGetTextToTokenize
 import com.basistheory.elements.view.TextElement
 import kotlinx.coroutines.CoroutineDispatcher
@@ -89,6 +95,61 @@ class BasisTheoryElements internal constructor(
         } catch (e: com.basistheory.ApiException) {
             throw ApiException(e.code, e.responseHeaders, e.responseBody, e.message)
         }
+
+    fun encryptTokens(
+        encryptTokenRequest: EncryptTokenRequest,
+    ): Array<EncryptTokenResponse> =
+        try {
+            val processedTokenRequests = processTokenRequests(encryptTokenRequest.tokenRequests)
+
+            processedTokenRequests.map { tokenData ->
+                val encrypted = JWEEncryption.encrypt(
+                    tokenData.first,
+                    encryptTokenRequest.publicKey,
+                    encryptTokenRequest.keyId
+                )
+                EncryptTokenResponse(encrypted, tokenData.second)
+            }.toTypedArray()
+        } catch (e: IllegalArgumentException) {
+            throw e
+        } catch (e: Exception) {
+            throw EncryptTokenException("Failed to encrypt tokens", e)
+        }
+
+    private fun processTokenRequests(tokenRequests: Any): List<Pair<Any, String>> {
+        return tokenRequests.toMap().let {
+            it.takeIf { "type" in it }?.let {
+                listOfNotNull(processIndividualTokenRequest(it))
+            } ?: processMultipleTokenRequests(it)
+        }
+    }
+
+    private fun processMultipleTokenRequests(tokenRequestsMap: Map<String, Any?>): List<Pair<Any, String>> {
+        return tokenRequestsMap.values.mapNotNull { tokenRequest ->
+            processIndividualTokenRequest(tokenRequest?.toMap())
+        }
+    }
+
+    private fun processIndividualTokenRequest(tokenRequest: Any?): Pair<Any, String> {
+        val rawData = tokenRequest?.tryGetValue<Any>("data")
+        val rawType = tokenRequest?.tryGetValue<String>("type")
+
+        validateTokenRequestFields(rawData, rawType)
+
+        return Pair(processTokenData(rawData)!!, rawType!!)
+    }
+
+    private fun validateTokenRequestFields(data: Any?, type: String?) {
+        requireNotNull(data) { "Token data must be provided" }
+        requireNotNull(type) { "Token type must be provided" }
+    }
+
+    private fun processTokenData(data: Any?): Any? = when (data) {
+        null -> null
+        is TextElement -> data.tryGetTextToTokenize().toValueType(data.getValueType)
+        is ElementValueReference -> data.getValue().toValueType(data.getValueType)
+        else -> if (data::class.java.isPrimitiveType()) data else replaceElementRefs(data.toMap())
+    }
 
     companion object {
         @JvmStatic

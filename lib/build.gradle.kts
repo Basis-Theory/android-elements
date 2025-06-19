@@ -84,6 +84,8 @@ dependencies {
     }
     implementation(libs.okhttp)
     implementation(libs.gson)
+    implementation(libs.jose.jwt)
+    implementation(libs.cryptotink)
     testImplementation(libs.junit)
     testImplementation(libs.junitparams)
     testImplementation(libs.robolectric)
@@ -109,6 +111,9 @@ configurations.all {
                         selectArtifact(DependencyArtifact.DEFAULT_TYPE, null, null)
                     }
                     useVersion("2.15.0-rc1")
+                }
+                "io.netty:netty-handler" -> {
+                    useVersion("4.1.118.Final")
                 }
             }
         }

@@ -11,7 +11,10 @@ import com.basistheory.TokensApi
 import com.basistheory.elements.constants.ElementValueType
 import com.basistheory.elements.model.CreateTokenRequest
 import com.basistheory.elements.model.ElementValueReference
+import com.basistheory.elements.model.EncryptTokenRequest
+import com.basistheory.elements.model.EncryptTokenResponse
 import com.basistheory.elements.model.exceptions.ApiException
+import com.basistheory.elements.model.exceptions.EncryptTokenException
 import com.basistheory.elements.model.exceptions.IncompleteElementException
 import com.basistheory.elements.model.toJava
 import com.basistheory.elements.view.CardExpirationDateElement
@@ -19,6 +22,7 @@ import com.basistheory.elements.view.CardNumberElement
 import com.basistheory.elements.view.CardVerificationCodeElement
 import com.basistheory.elements.view.TextElement
 import com.github.javafaker.Faker
+import com.nimbusds.jose.JOSEException
 import io.mockk.Called
 import io.mockk.every
 import io.mockk.impl.annotations.InjectMockKs
@@ -41,11 +45,13 @@ import org.robolectric.RobolectricTestRunner
 import org.robolectric.annotation.Config
 import strikt.api.expectCatching
 import strikt.api.expectThat
+import strikt.assertions.hasSize
 import strikt.assertions.isA
 import strikt.assertions.isEqualTo
 import strikt.assertions.isFailure
 import strikt.assertions.isNotEqualTo
 import strikt.assertions.isNull
+import strikt.assertions.toList
 import java.time.Instant
 import java.time.LocalDate
 import java.time.OffsetDateTime
@@ -1050,6 +1056,243 @@ class BasisTheoryElementsTests {
         expectThat(bt.proxy).isNotEqualTo(null)
 
         verify { provider.getProxyApi(any()) }
+    }
+
+    @Test
+    fun `encryptTokens should handle single token request with elements`() {
+        val cardNumber = testCardNumbers.random()
+        cardNumberElement.setText(cardNumber)
+
+        val expDate = LocalDate.now().plus(2, ChronoUnit.YEARS)
+        val expMonth = expDate.monthValue.toString().padStart(2, '0')
+        val expYear = expDate.year.toString()
+        cardExpElement.setText("$expMonth/${expYear.takeLast(2)}")
+
+        val cvc = faker.random().nextInt(100, 999).toString()
+        cvcElement.setText(cvc)
+
+        val encryptTokenRequest = EncryptTokenRequest(
+            tokenRequests = object {
+                val data = object {
+                    val number = cardNumberElement
+                    val expiration_month = cardExpElement.month()
+                    val expiration_year = cardExpElement.year()
+                    val cvc = cvcElement
+                }
+                val type = "card"
+            },
+            publicKey = "-----BEGIN PUBLIC KEY-----\nw6RFs74UmOcxjbWBSlZQ0QLam63bvKQvGeLSVfxYIR8=\n-----END PUBLIC KEY-----",
+            keyId = "d6b86549-212f-4bdc-adeb-2f39902740f6"
+        )
+
+        val result = bt.encryptTokens(encryptTokenRequest)
+
+        result.forEach {
+            println(it.encrypted)
+        }
+
+        expectThat(result).toList().hasSize(1)
+        expectThat(result[0]).isA<EncryptTokenResponse>().and {
+            get { type }.isEqualTo("card")
+            get { encrypted }.isNotEqualTo("")
+        }
+    }
+
+
+    @Test
+    fun `encryptTokens should handle multiple token requests with elements`() {
+        val name = faker.name().fullName()
+        nameElement.setText(name)
+
+        val phoneNumber = faker.phoneNumber().phoneNumber()
+        phoneNumberElement.setText(phoneNumber)
+
+        val encryptTokenRequest = EncryptTokenRequest(
+            tokenRequests = object {
+                val tokenA = object {
+                    val data = object {
+                        val name = nameElement
+                        val phoneNumber = phoneNumberElement
+                        val note = "Non sensitive value"
+                    }
+                    val type = "token"
+                }
+                val tokenB = object {
+                    val data = object {
+                        val name = nameElement
+                        val phoneNumber = phoneNumberElement
+                        val note = "Non sensitive value"
+                    }
+                    val type = "token"
+                }
+            },
+            publicKey = "-----BEGIN PUBLIC KEY-----\nw6RFs74UmOcxjbWBSlZQ0QLam63bvKQvGeLSVfxYIR8=\n-----END PUBLIC KEY-----",
+            keyId = "d6b86549-212f-4bdc-adeb-2f39902740f6"
+        )
+
+        val result = bt.encryptTokens(encryptTokenRequest)
+
+        result.forEach { token -> println(token.encrypted) }
+
+        expectThat(result).toList().hasSize(2)
+        result.forEach { response ->
+            expectThat(response).isA<EncryptTokenResponse>().and {
+                get { type }.isEqualTo("token")
+                get { encrypted }.isNotEqualTo("")
+            }
+        }
+    }
+
+    @Test
+    fun `encryptTokens should throw EncryptTokenException when data is null`() {
+        val encryptTokenRequest = EncryptTokenRequest(
+            tokenRequests = object {
+                val data = null
+                val type = "token"
+            },
+            publicKey = "-----BEGIN PUBLIC KEY-----\nw6RFs74UmOcxjbWBSlZQ0QLam63bvKQvGeLSVfxYIR8=\n-----END PUBLIC KEY-----",
+            keyId = "d6b86549-212f-4bdc-adeb-2f39902740f6"
+        )
+
+        expectCatching { bt.encryptTokens(encryptTokenRequest) }
+            .isFailure()
+            .isA<IllegalArgumentException>()
+            .and {
+                get { message }.isEqualTo("Token data must be provided")
+            }
+    }
+
+    @Test
+    fun `encryptTokens should throw EncryptTokenException when type is null`() {
+        val encryptTokenRequest = EncryptTokenRequest(
+            tokenRequests = object {
+                val data = object {
+                    val name = faker.name().fullName()
+                }
+                val type = null
+            },
+            publicKey = "-----BEGIN PUBLIC KEY-----\nw6RFs74UmOcxjbWBSlZQ0QLam63bvKQvGeLSVfxYIR8=\n-----END PUBLIC KEY-----",
+            keyId = "d6b86549-212f-4bdc-adeb-2f39902740f6"
+        )
+
+        expectCatching { bt.encryptTokens(encryptTokenRequest) }
+            .isFailure()
+            .isA<IllegalArgumentException>()
+            .and {
+                get { message }.isEqualTo("Token type must be provided")
+            }
+    }
+
+    @Test
+    fun `encryptTokens should throw EncryptTokenException when publicKey is invalid`() {
+        val encryptTokenRequest = EncryptTokenRequest(
+            tokenRequests = object {
+                val data = object {
+                    val name = faker.name().fullName()
+                }
+                val type = "token"
+            },
+            publicKey = "",
+            keyId = "d6b86549-212f-4bdc-adeb-2f39902740f6"
+        )
+
+        expectCatching { bt.encryptTokens(encryptTokenRequest) }
+            .isFailure()
+            .isA<EncryptTokenException>()
+            .and {
+                get { cause }.isA<JOSEException>().and {
+                    get { message }.isEqualTo("Public key length is not 32-byte")
+                }
+            }
+    }
+
+    @Test
+    fun `encryptTokens should throw EncryptTokenException when keyId is invalid`() {
+        val encryptTokenRequest = EncryptTokenRequest(
+            tokenRequests = object {
+                val data = object {
+                    val name = faker.name().fullName()
+                }
+                val type = "token"
+            },
+            publicKey = "-----BEGIN PUBLIC KEY-----\nw6RFs74UmOcxjbWBSlZQ0QLam63bvKQvGeLSVfxYIR8=\n-----END PUBLIC KEY-----",
+            keyId = ""
+        )
+
+        expectCatching { bt.encryptTokens(encryptTokenRequest) }
+            .isFailure()
+            .isA<IllegalArgumentException>()
+            .and {
+                get { message }.isEqualTo("Key ID is required")
+            }
+    }
+
+    @Test
+    fun `encryptTokens should handle single token request with plaintext data`() {
+        val name = faker.name().fullName()
+        val phoneNumber = faker.phoneNumber().phoneNumber()
+
+        val encryptTokenRequest = EncryptTokenRequest(
+            tokenRequests = object {
+                val data = object {
+                    val name = name
+                    val phoneNumber = phoneNumber
+                    val note = "Non sensitive value"
+                }
+                val type = "token"
+            },
+            publicKey = "-----BEGIN PUBLIC KEY-----\nw6RFs74UmOcxjbWBSlZQ0QLam63bvKQvGeLSVfxYIR8=\n-----END PUBLIC KEY-----",
+            keyId = "d6b86549-212f-4bdc-adeb-2f39902740f6"
+        )
+
+        val result = bt.encryptTokens(encryptTokenRequest)
+
+        expectThat(result).toList().hasSize(1)
+        expectThat(result[0]).isA<EncryptTokenResponse>().and {
+            get { type }.isEqualTo("token")
+            get { encrypted }.isNotEqualTo("")
+        }
+    }
+
+    @Test
+    fun `encryptTokens should handle multiple token requests with plaintext data`() {
+        val name1 = faker.name().fullName()
+        val phoneNumber1 = faker.phoneNumber().phoneNumber()
+        val name2 = faker.name().fullName()
+        val phoneNumber2 = faker.phoneNumber().phoneNumber()
+
+        val encryptTokenRequest = EncryptTokenRequest(
+            tokenRequests = object {
+                val tokenA = object {
+                    val data = object {
+                        val name = name1
+                        val phoneNumber = phoneNumber1
+                        val note = "Non sensitive value"
+                    }
+                    val type = "token"
+                }
+                val tokenB = object {
+                    val data = object {
+                        val name = name2
+                        val phoneNumber = phoneNumber2
+                        val note = "Another non sensitive value"
+                    }
+                    val type = "token"
+                }
+            },
+            publicKey = "-----BEGIN PUBLIC KEY-----\nw6RFs74UmOcxjbWBSlZQ0QLam63bvKQvGeLSVfxYIR8=\n-----END PUBLIC KEY-----",
+            keyId = "d6b86549-212f-4bdc-adeb-2f39902740f6"
+        )
+
+        val result = bt.encryptTokens(encryptTokenRequest)
+
+        expectThat(result).toList().hasSize(2)
+        result.forEach { response ->
+            expectThat(response).isA<EncryptTokenResponse>().and {
+                get { type }.isEqualTo("token")
+                get { encrypted }.isNotEqualTo("")
+            }
+        }
     }
 
     private fun createTokenRequest(data: Any): CreateTokenRequest =
