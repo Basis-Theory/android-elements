@@ -10,7 +10,6 @@ import com.basistheory.elements.example.R
 import com.basistheory.elements.example.util.prettyPrintJson
 import com.basistheory.elements.model.EncryptTokenRequest
 import com.basistheory.elements.model.Token
-import com.basistheory.elements.model.EncryptTokenResponse
 import com.basistheory.elements.service.BasisTheoryElements
 import com.basistheory.elements.service.HttpMethod
 import com.basistheory.elements.service.ProxyRequest
@@ -160,12 +159,12 @@ open class ApiViewModel(application: Application) : AndroidViewModel(application
         )
     }
 
-    fun encryptToken(encryptTokenRequest: EncryptTokenRequest): LiveData<Array<EncryptTokenResponse>> = liveData {
+    fun encryptToken(encryptTokenRequest: EncryptTokenRequest): LiveData<Any> = liveData {
         _errorMessage.value = null
         _result.value = null
 
         runCatching {
-            bt.encryptTokens(encryptTokenRequest)
+            bt.encryptToken(encryptTokenRequest)
         }.fold(
             onSuccess = {
                 _result.value = it.prettyPrintJson()

@@ -45,13 +45,13 @@ import org.robolectric.RobolectricTestRunner
 import org.robolectric.annotation.Config
 import strikt.api.expectCatching
 import strikt.api.expectThat
-import strikt.assertions.hasSize
+import strikt.assertions.containsKey
 import strikt.assertions.isA
 import strikt.assertions.isEqualTo
 import strikt.assertions.isFailure
+import strikt.assertions.isNotEmpty
 import strikt.assertions.isNotEqualTo
 import strikt.assertions.isNull
-import strikt.assertions.toList
 import java.time.Instant
 import java.time.LocalDate
 import java.time.OffsetDateTime
@@ -1085,16 +1085,10 @@ class BasisTheoryElementsTests {
             keyId = "d6b86549-212f-4bdc-adeb-2f39902740f6"
         )
 
-        val result = bt.encryptTokens(encryptTokenRequest)
-
-        result.forEach {
-            println(it.encrypted)
-        }
-
-        expectThat(result).toList().hasSize(1)
-        expectThat(result[0]).isA<EncryptTokenResponse>().and {
+        val result = bt.encryptToken(encryptTokenRequest)
+        expectThat(result).isA<EncryptTokenResponse>().and {
             get { type }.isEqualTo("card")
-            get { encrypted }.isNotEqualTo("")
+            get { encrypted }.isNotEmpty()
         }
     }
 
@@ -1130,16 +1124,27 @@ class BasisTheoryElementsTests {
             keyId = "d6b86549-212f-4bdc-adeb-2f39902740f6"
         )
 
-        val result = bt.encryptTokens(encryptTokenRequest)
-
-        result.forEach { token -> println(token.encrypted) }
-
-        expectThat(result).toList().hasSize(2)
-        result.forEach { response ->
-            expectThat(response).isA<EncryptTokenResponse>().and {
-                get { type }.isEqualTo("token")
-                get { encrypted }.isNotEqualTo("")
-            }
+        val result = bt.encryptToken(encryptTokenRequest)
+        expectThat(result).isA<Map<String, Any>>()
+        
+        val resultMap = result as Map<String, Any>
+        
+        expectThat(resultMap).containsKey("tokenA")
+        val tokenA = resultMap["tokenA"] as Map<String, Any>
+        expectThat(tokenA).and {
+            containsKey("encrypted")
+            containsKey("type")
+            get { get("type") }.isEqualTo("token")
+            get { get("encrypted") }.isA<String>().isNotEqualTo("")
+        }
+        
+        expectThat(resultMap).containsKey("tokenB")
+        val tokenB = resultMap["tokenB"] as Map<String, Any>
+        expectThat(tokenB).and {
+            containsKey("encrypted") 
+            containsKey("type")
+            get { get("type") }.isEqualTo("token")
+            get { get("encrypted") }.isA<String>().isNotEqualTo("")
         }
     }
 
@@ -1154,7 +1159,7 @@ class BasisTheoryElementsTests {
             keyId = "d6b86549-212f-4bdc-adeb-2f39902740f6"
         )
 
-        expectCatching { bt.encryptTokens(encryptTokenRequest) }
+        expectCatching { bt.encryptToken(encryptTokenRequest) }
             .isFailure()
             .isA<IllegalArgumentException>()
             .and {
@@ -1175,7 +1180,7 @@ class BasisTheoryElementsTests {
             keyId = "d6b86549-212f-4bdc-adeb-2f39902740f6"
         )
 
-        expectCatching { bt.encryptTokens(encryptTokenRequest) }
+        expectCatching { bt.encryptToken(encryptTokenRequest) }
             .isFailure()
             .isA<IllegalArgumentException>()
             .and {
@@ -1196,7 +1201,7 @@ class BasisTheoryElementsTests {
             keyId = "d6b86549-212f-4bdc-adeb-2f39902740f6"
         )
 
-        expectCatching { bt.encryptTokens(encryptTokenRequest) }
+        expectCatching { bt.encryptToken(encryptTokenRequest) }
             .isFailure()
             .isA<EncryptTokenException>()
             .and {
@@ -1219,7 +1224,7 @@ class BasisTheoryElementsTests {
             keyId = ""
         )
 
-        expectCatching { bt.encryptTokens(encryptTokenRequest) }
+        expectCatching { bt.encryptToken(encryptTokenRequest) }
             .isFailure()
             .isA<IllegalArgumentException>()
             .and {
@@ -1245,12 +1250,10 @@ class BasisTheoryElementsTests {
             keyId = "d6b86549-212f-4bdc-adeb-2f39902740f6"
         )
 
-        val result = bt.encryptTokens(encryptTokenRequest)
-
-        expectThat(result).toList().hasSize(1)
-        expectThat(result[0]).isA<EncryptTokenResponse>().and {
+        val result = bt.encryptToken(encryptTokenRequest)
+        expectThat(result).isA<EncryptTokenResponse>().and {
             get { type }.isEqualTo("token")
-            get { encrypted }.isNotEqualTo("")
+            get { encrypted }.isNotEmpty()
         }
     }
 
@@ -1284,14 +1287,27 @@ class BasisTheoryElementsTests {
             keyId = "d6b86549-212f-4bdc-adeb-2f39902740f6"
         )
 
-        val result = bt.encryptTokens(encryptTokenRequest)
+        val result = bt.encryptToken(encryptTokenRequest)
+        expectThat(result).isA<Map<String, Any>>()
 
-        expectThat(result).toList().hasSize(2)
-        result.forEach { response ->
-            expectThat(response).isA<EncryptTokenResponse>().and {
-                get { type }.isEqualTo("token")
-                get { encrypted }.isNotEqualTo("")
-            }
+        val resultMap = result as Map<String, Any>
+
+        expectThat(resultMap).containsKey("tokenA")
+        val tokenA = resultMap["tokenA"] as Map<String, Any>
+        expectThat(tokenA).and {
+            containsKey("encrypted")
+            containsKey("type")
+            get { get("type") }.isEqualTo("token")
+            get { get("encrypted") }.isA<String>().isNotEqualTo("")
+        }
+
+        expectThat(resultMap).containsKey("tokenB")
+        val tokenB = resultMap["tokenB"] as Map<String, Any>
+        expectThat(tokenB).and {
+            containsKey("encrypted")
+            containsKey("type")
+            get { get("type") }.isEqualTo("token")
+            get { get("encrypted") }.isA<String>().isNotEqualTo("")
         }
     }
 
