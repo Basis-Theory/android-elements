@@ -96,39 +96,43 @@ class BasisTheoryElements internal constructor(
             throw ApiException(e.code, e.responseHeaders, e.responseBody, e.message)
         }
 
-    fun encryptTokens(
+    fun encryptToken(
         encryptTokenRequest: EncryptTokenRequest,
-    ): Array<EncryptTokenResponse> =
+    ): Any =
         try {
-            val processedTokenRequests = processTokenRequests(encryptTokenRequest.tokenRequests)
-
-            processedTokenRequests.map { tokenData ->
+            val tokenRequestsMap = encryptTokenRequest.tokenRequests.toMap()
+            val isSingleToken = "type" in tokenRequestsMap
+            if (isSingleToken) {
+                val tokenData = processIndividualTokenRequest(tokenRequestsMap)
                 val encrypted = JWEEncryption.encrypt(
                     tokenData.first,
                     encryptTokenRequest.publicKey,
                     encryptTokenRequest.keyId
                 )
                 EncryptTokenResponse(encrypted, tokenData.second)
-            }.toTypedArray()
+            } else {
+                val result = mutableMapOf<String, Map<String, Any>>()
+                
+                tokenRequestsMap.forEach { (key, tokenRequestValue) ->
+                    val tokenData = processIndividualTokenRequest(tokenRequestValue?.toMap())
+                    val encrypted = JWEEncryption.encrypt(
+                        tokenData.first,
+                        encryptTokenRequest.publicKey,
+                        encryptTokenRequest.keyId
+                    )
+                    result[key] = mapOf(
+                        "encrypted" to encrypted,
+                        "type" to tokenData.second
+                    )
+                }
+                
+                result
+            }
         } catch (e: IllegalArgumentException) {
             throw e
         } catch (e: Exception) {
             throw EncryptTokenException("Failed to encrypt tokens", e)
         }
-
-    private fun processTokenRequests(tokenRequests: Any): List<Pair<Any, String>> {
-        return tokenRequests.toMap().let {
-            it.takeIf { "type" in it }?.let {
-                listOfNotNull(processIndividualTokenRequest(it))
-            } ?: processMultipleTokenRequests(it)
-        }
-    }
-
-    private fun processMultipleTokenRequests(tokenRequestsMap: Map<String, Any?>): List<Pair<Any, String>> {
-        return tokenRequestsMap.values.mapNotNull { tokenRequest ->
-            processIndividualTokenRequest(tokenRequest?.toMap())
-        }
-    }
 
     private fun processIndividualTokenRequest(tokenRequest: Any?): Pair<Any, String> {
         val rawData = tokenRequest?.tryGetValue<Any>("data")
