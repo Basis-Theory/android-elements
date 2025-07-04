@@ -1,3 +1,11 @@
+## [1.2.0](https://github.com/Basis-Theory/android-elements/compare/1.1.0...1.2.0) (2025-07-04)
+
+
+### Features
+
+* including token alias in the return when encrypting multiple tokens ([6015b85](https://github.com/Basis-Theory/android-elements/commit/6015b85483c7db58c4fec3e60f46e07eecb30dc3))
+
+
 ## [1.1.0](https://github.com/Basis-Theory/android-elements/compare/1.0.0...1.1.0) (2025-06-19)
 
 
