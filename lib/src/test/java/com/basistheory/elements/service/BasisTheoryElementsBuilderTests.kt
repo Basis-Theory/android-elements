@@ -4,16 +4,17 @@ import kotlinx.coroutines.Dispatchers
 import org.junit.Test
 import strikt.api.expectCatching
 import strikt.assertions.isA
+import strikt.assertions.isFailure
 import strikt.assertions.isSuccess
 
 class BasisTheoryElementsBuilderTests {
 
     @Test
-    fun `can build default instance without using any setters`() {
+    fun `can't build default instance without an api key`() {
         expectCatching {
             BasisTheoryElements.builder()
                 .build()
-        }.isSuccess().isA<BasisTheoryElements>()
+        }.isFailure()
     }
 
     @Test
