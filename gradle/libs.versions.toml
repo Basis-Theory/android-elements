@@ -1,5 +1,5 @@
 [versions]
-activityCompose = "1.9.3"
+activityCompose = "1.10.1"
 androidGifDrawable = "1.2.27"
 androidGradlePlugin = "8.8.0"
 appcompat = "1.7.0"
