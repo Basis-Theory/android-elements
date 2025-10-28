@@ -44,18 +44,18 @@ internal fun com.basistheory.types.Token.toAndroid(): Token = Token(
         this.type.toString(),
         this.data,
         this.mask,
-        this.fingerprint.toString(),
-        this.fingerprintExpression.toString(),
+        this.fingerprint.orElse(null),
+        this.fingerprintExpression.orElse(null),
         this.enrichments,
-        this.expiresAt.get(),
+        this.expiresAt.orElse(null),
         this.createdBy.toUUIDOrThrow(),
-        this.createdAt.get(),
+        this.createdAt.orElse(null),
         this.modifiedBy.toUUIDOrNull(),
-        this.modifiedAt.get(),
+        this.modifiedAt.orElse(null),
         this.metadata.orElse(null)?.run {
             mapNotNull { (k, v) -> v.orElse(null)?.let { k to it } }.toMap()
         },
-        this.containers.get(),
+        this.containers.orElse(emptyList()),
         this.searchIndexes.orElse(emptyList())
     )
 

@@ -1,7 +1,7 @@
 package com.basistheory.elements.service
 
-import com.basistheory.BasisTheoryApiClient
 import com.basistheory.elements.model.ElementValueReference
+import com.basistheory.elements.model.exceptions.ApiException
 import com.basistheory.elements.util.isPrimitiveType
 import com.basistheory.elements.util.replaceElementRefs
 import com.basistheory.elements.util.toMap
@@ -126,7 +126,7 @@ class ProxyApi(
                     addHeader(key, value)
                 }
                 val apiKey = apiKeyOverride ?: apiKey
-                addHeader("Authorization", "Bearer $apiKey")
+                addHeader("BT-API-KEY", apiKey)
             }
             .build()
 
