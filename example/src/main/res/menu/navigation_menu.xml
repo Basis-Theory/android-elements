@@ -7,6 +7,9 @@
             android:id="@+id/nav_card"
             android:title="@string/title_card" />
         <item
+            android:id="@+id/nav_token_intent"
+            android:title="@string/title_token_intent" />
+        <item
             android:id="@+id/nav_social_security_number"
             android:title="@string/title_social_security_number" />
         <item
