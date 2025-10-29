@@ -1,21 +1,13 @@
-name: Security Scan
+name: Semgrep PR Check
 
 on:
-  schedule:
-    - cron: "0 12 * * 1" # 12pm UTC every Monday
-  workflow_dispatch:
+  # Scan changed files in PRs (diff-aware scanning):
+  pull_request: {}
+  # Scan on-demand through GitHub Actions interface:
+  workflow_dispatch: {}
 
 jobs:
-  code_scan:
-    name: SAST scan
-    uses: Basis-Theory/security-workflows/.github/workflows/code-scan.yml@master
+  pr-security-check:
+    name: PR Security Check
+    uses: Basis-Theory/public-security-workflows/.github/workflows/pr-check.yml@master
     secrets: inherit
-    with:
-      app-name: android-elements
-
-  dependency_scan:
-    name: SCA scan
-    uses: Basis-Theory/security-workflows/.github/workflows/dependency-scan.yml@master
-    secrets: inherit
-    with:
-      app-name: android-elements

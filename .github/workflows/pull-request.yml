@@ -67,7 +67,5 @@ jobs:
 
   security:
     name: Security scan
-    uses: Basis-Theory/security-workflows/.github/workflows/code-scan.yml@master
+    uses: Basis-Theory/public-security-workflows/.github/workflows/pr-check.yml@master
     secrets: inherit
-    with:
-      app-name: android-elements
