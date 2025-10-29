@@ -38,7 +38,7 @@ class RawProxyResponseFragment : Fragment() {
     private fun invokeProxy() {
         val proxyRequest: ProxyRequest = ProxyRequest().apply {
             headers = mapOf(
-                "BT-PROXY-KEY" to "key_dev_prod_us_proxy_BruT4udzdCSYbWkMoMsR6V",
+                "BT-PROXY-KEY" to "ENTER_YOUR_PROXY_KEY_WITH_RAW_RESPONSE_ENABLED",
                 "Content-Type" to "application/json"
             )
             body = object {
