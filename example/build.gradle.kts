@@ -6,6 +6,12 @@ plugins {
     alias(libs.plugins.kotlin.android)
 }
 
+java {
+    toolchain {
+        languageVersion.set(JavaLanguageVersion.of(17))
+    }
+}
+
 android {
     namespace = "com.basistheory.elements.example"
     compileSdk = 35

@@ -7,6 +7,12 @@ plugins {
     alias(libs.plugins.maven.publish)
 }
 
+java {
+    toolchain {
+        languageVersion.set(JavaLanguageVersion.of(17))
+    }
+}
+
 android {
     namespace = "com.basistheory.elements"
     compileSdk = 35
