@@ -7,6 +7,12 @@ plugins {
     alias(libs.plugins.maven.publish)
 }
 
+java {
+    toolchain {
+        languageVersion.set(JavaLanguageVersion.of(17))
+    }
+}
+
 android {
     namespace = "com.basistheory.elements"
     compileSdk = 35
@@ -34,6 +40,10 @@ android {
             )
         }
     }
+    kotlinOptions {
+        jvmTarget = "17"
+    }
+
     compileOptions {
         isCoreLibraryDesugaringEnabled = true
 
@@ -79,9 +89,7 @@ dependencies {
     implementation(libs.kotlinx.coroutines.android)
     implementation(libs.commons.lang3)
     implementation(libs.threetenbp)
-    implementation(libs.basistheory.java) {
-        exclude(group = "javax.ws.rs", module = "javax.ws.rs-api")
-    }
+    implementation(libs.basistheory.javaSdk)
     implementation(libs.okhttp)
     implementation(libs.gson)
     implementation(libs.jose.jwt)

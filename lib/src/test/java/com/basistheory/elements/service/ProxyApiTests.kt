@@ -1,19 +1,23 @@
 package com.basistheory.elements.service
 
-import com.basistheory.ApiClient
-import com.basistheory.ApiResponse
 import com.basistheory.elements.model.ElementValueReference
+import io.mockk.CapturingSlot
 import io.mockk.every
-import io.mockk.impl.annotations.SpyK
+import io.mockk.impl.annotations.MockK
 import io.mockk.junit4.MockKRule
+import io.mockk.just
+import io.mockk.runs
 import io.mockk.slot
-import io.mockk.spyk
 import io.mockk.verify
 import junitparams.JUnitParamsRunner
 import junitparams.Parameters
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking
 import okhttp3.Call
+import okhttp3.OkHttpClient
+import okhttp3.Request
+import okhttp3.Response
+import okhttp3.ResponseBody
 import okio.Buffer
 import org.junit.Before
 import org.junit.Rule
@@ -30,30 +34,52 @@ class ProxyApiTests {
     @get:Rule
     val mockkRule = MockKRule(this)
 
-    @SpyK
-    private var apiClient: ApiClient = spyk()
+    @MockK
+    private lateinit var mockHttpClient: OkHttpClient
 
-    private val proxyApi: ProxyApi = ProxyApi(Dispatchers.IO) { apiClient }
+    @MockK
+    private lateinit var mockCall: Call
+
+    @MockK
+    private lateinit var mockResponse: Response
+
+    @MockK
+    private lateinit var mockResponseBody: ResponseBody
+
+    private lateinit var proxyApi: ProxyApi
 
     private var proxyRequest: ProxyRequest = ProxyRequest()
 
+    private fun setupMocks(responseJson: String = "{}", exposeRawResponse: Boolean = false): CapturingSlot<Request> {
+        val requestSlot = slot<Request>()
+        
+        every { mockHttpClient.newCall(capture(requestSlot)) } returns mockCall
+        every { mockCall.execute() } returns mockResponse
+        every { mockResponse.body } returns mockResponseBody
+        every { mockResponseBody.string() } returns responseJson
+        
+        if (exposeRawResponse) {
+            every { mockResponse.header(BT_EXPOSE_RAW_PROXY_RESPONSE_HEADER) } returns "true"
+        } else {
+            every { mockResponse.header(any()) } returns null
+        }
+        
+        every { mockResponse.close() } just runs
+        
+        return requestSlot
+    }
+
     @Before
-    fun setUp() {
-        every {
-            apiClient.buildCall(
-                any(),
-                any(),
-                any(),
-                any(),
-                any(),
-                any(),
-                any(),
-                any(),
-                any(),
-                any(),
-                any()
-            )
-        } answers { callOriginal() }
+    fun setup() {
+        proxyApi = ProxyApi(
+            dispatcher = Dispatchers.IO,
+            apiBaseUrl = "https://api.basistheory.com",
+            apiKey = "124",
+            httpClient = mockHttpClient
+        )
+        proxyRequest = ProxyRequest()
+
+        setupMocks()
     }
 
     @Test
@@ -75,12 +101,7 @@ class ProxyApiTests {
             body = requestBody
         }
 
-        val callSlot = slot<Call>()
-        every { apiClient.execute<Any>(capture(callSlot), any()) } returns ApiResponse(
-            200,
-            emptyMap(),
-            "Hello World"
-        )
+        val requestSlot = setupMocks("\"Hello World\"")
 
         val result = runBlocking {
             when (httpMethod) {
@@ -92,9 +113,10 @@ class ProxyApiTests {
             }
         }
 
-        verify(exactly = 1) { apiClient.execute<Any>(any(), any()) }
+        verify(exactly = 1) { mockHttpClient.newCall(any()) }
+        verify(exactly = 1) { mockCall.execute() }
 
-        expectThat(callSlot.captured.request()) {
+        expectThat(requestSlot.captured) {
             get { method }.isEqualTo(httpMethod.name)
             get { url.toString() }
                 .isEqualTo("https://api.basistheory.com/proxy/payment?param=${queryParamValue}")
@@ -117,32 +139,33 @@ class ProxyApiTests {
 
     @Test
     fun `should transform complex proxy response to element value references`() {
-        val callSlot = slot<Call>()
-        every { apiClient.execute<Any>(capture(callSlot), any()) } returns ApiResponse(
-            200,
-            emptyMap(),
-            linkedMapOf(
-                "customer_id" to "102023201931949",
-                "id" to null,
-                "card" to linkedMapOf(
-                    "number" to "4242424242424242",
-                    "expiration_month" to "10",
-                    "expiration_year" to "2026",
-                    "cvc" to "123",
-                ),
-                "pii" to linkedMapOf(
-                    "name" to linkedMapOf(
-                        "first_name" to "Drewsue",
-                        "last_name" to "Webuino"
-                    ),
-                    "phone_numbers" to arrayListOf("+1 111 222 3333", "+1 999 888 7777"),
-                    "aliases" to arrayListOf(linkedMapOf(
-                        "first_name" to "John",
-                        "last_name" to "Doe"
-                    ))
-                )
-            )
-        )
+        val responseJson = """
+            {
+                "customer_id": "102023201931949",
+                "id": null,
+                "card": {
+                    "number": "4242424242424242",
+                    "expiration_month": "10",
+                    "expiration_year": "2026",
+                    "cvc": "123"
+                },
+                "pii": {
+                    "name": {
+                        "first_name": "Drewsue",
+                        "last_name": "Webuino"
+                    },
+                    "phone_numbers": ["+1 111 222 3333", "+1 999 888 7777"],
+                    "aliases": [
+                        {
+                            "first_name": "John",
+                            "last_name": "Doe"
+                        }
+                    ]
+                }
+            }
+        """.trimIndent()
+
+        setupMocks(responseJson)
 
         val result = runBlocking {
             proxyApi.post(proxyRequest)
@@ -165,14 +188,9 @@ class ProxyApiTests {
 
     @Test
     fun `should return raw response when BT_EXPOSE_RAW_PROXY_RESPONSE_HEADER is present`() {
-        val callSlot = slot<Call>()
-        every { apiClient.execute<Any>(capture(callSlot), any()) } returns ApiResponse(
-            200,
-            mapOf(BT_EXPOSE_RAW_PROXY_RESPONSE_HEADER to listOf("true")),
-            mapOf(
-                "test" to "something something",
-            )
-        )
+        val responseJson = """{"test":"something something"}"""
+
+        setupMocks(responseJson, true)
 
         val result = runBlocking {
             proxyApi.post(proxyRequest)
@@ -183,19 +201,9 @@ class ProxyApiTests {
 
     @Test
     fun `should transform array proxy response to element value references`() {
-        val callSlot = slot<Call>()
-        every { apiClient.execute<Any>(capture(callSlot), any()) } returns ApiResponse(
-            200,
-            emptyMap(),
-            arrayOf(
-                "foo",
-                null,
-                "bar",
-                null,
-                "yaz",
-                "qux"
-            )
-        )
+        val responseJson = """["foo", null, "bar", null, "yaz", "qux"]"""
+
+        setupMocks(responseJson)
 
         val result = runBlocking {
             proxyApi.post(proxyRequest)
@@ -207,19 +215,9 @@ class ProxyApiTests {
 
     @Test
     fun `should transform array list proxy response to element value references`() {
-        val callSlot = slot<Call>()
-        every { apiClient.execute<Any>(capture(callSlot), any()) } returns ApiResponse(
-            200,
-            emptyMap(),
-            arrayListOf(
-                "foo",
-                null,
-                "bar",
-                null,
-                "yaz",
-                "qux"
-            )
-        )
+        val responseJson = """["foo", null, "bar", null, "yaz", "qux"]"""
+
+        setupMocks(responseJson)
 
         val result = runBlocking {
             proxyApi.post(proxyRequest)
@@ -238,5 +236,4 @@ class ProxyApiTests {
             arrayOf(HttpMethod.PUT, "text", "plain", "Hello World")
         )
     }
-
 }
