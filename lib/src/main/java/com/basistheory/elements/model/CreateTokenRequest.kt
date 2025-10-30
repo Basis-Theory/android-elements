@@ -23,6 +23,8 @@ class CreateTokenRequest(
     var containers: List<String>? = null,
 
     var searchIndexes: List<String>? = null,
+
+    var tokenIntentId: String? = null,
 )
 
 internal fun CreateTokenRequest.toJava(): com.basistheory.resources.tokens.requests.CreateTokenRequest =
@@ -37,4 +39,5 @@ internal fun CreateTokenRequest.toJava(): com.basistheory.resources.tokens.reque
         .metadata(this@toJava.metadata)
         .containers(this@toJava.containers)
         .searchIndexes(this@toJava.searchIndexes)
+        .tokenIntentId(this@toJava.tokenIntentId)
         .build()

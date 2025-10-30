@@ -12,6 +12,12 @@
         tools:layout="@layout/fragment_card" />
 
     <fragment
+        android:id="@+id/nav_token_intent"
+        android:name="com.basistheory.elements.example.view.token_intent.TokenIntentFragment"
+        android:label="@string/title_token_intent"
+        tools:layout="@layout/fragment_token_intent" />
+
+    <fragment
         android:id="@+id/nav_social_security_number"
         android:name="com.basistheory.elements.example.view.social_security_number.SocialSecurityNumberFragment"
         android:label="@string/title_social_security_number"

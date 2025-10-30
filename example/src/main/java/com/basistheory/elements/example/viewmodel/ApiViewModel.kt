@@ -9,7 +9,9 @@ import com.basistheory.elements.example.BuildConfig
 import com.basistheory.elements.example.R
 import com.basistheory.elements.example.util.prettyPrintJson
 import com.basistheory.elements.model.EncryptTokenRequest
+import com.basistheory.elements.model.CreateTokenIntentRequest
 import com.basistheory.elements.model.Token
+import com.basistheory.elements.model.TokenIntent
 import com.basistheory.elements.service.BasisTheoryElements
 import com.basistheory.elements.service.HttpMethod
 import com.basistheory.elements.service.ProxyRequest
@@ -174,6 +176,34 @@ open class ApiViewModel(application: Application) : AndroidViewModel(application
                 _errorMessage.value = getApplication<Application>()
                     .resources
                     .getString(R.string.encrypt_token_error, it)
+            }
+        )
+    }
+
+    fun createTokenIntent(payload: Any): LiveData<TokenIntent> = liveData {
+        _errorMessage.value = null
+        _result.value = null
+
+        runCatching {
+            val request = when (payload) {
+                is CreateTokenIntentRequest -> payload
+                else -> {
+                    // Extract type and data from payload object
+                    val type = payload::class.java.getDeclaredField("type").apply { isAccessible = true }.get(payload) as String
+                    val data = payload::class.java.getDeclaredField("data").apply { isAccessible = true }.get(payload)
+                    CreateTokenIntentRequest(type = type, data = data)
+                }
+            }
+            bt.createTokenIntent(request)
+        }.fold(
+            onSuccess = {
+                _result.value = it.prettyPrintJson()
+                emit(it)
+            },
+            onFailure = {
+                _errorMessage.value = getApplication<Application>()
+                    .resources
+                    .getString(R.string.create_token_intent_error, it)
             }
         )
     }

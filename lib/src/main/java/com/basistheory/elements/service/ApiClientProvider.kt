@@ -2,6 +2,7 @@ package com.basistheory.elements.service
 
 import com.basistheory.BasisTheoryApiClient
 import com.basistheory.resources.sessions.SessionsClient
+import com.basistheory.resources.tokenintents.TokenIntentsClient
 import com.basistheory.resources.tokens.TokensClient
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
@@ -15,6 +16,9 @@ internal class ApiClientProvider(
 
     fun getSessionsApi(apiKeyOverride: String? = null): SessionsClient =
         getApiClient(apiKeyOverride).sessions()
+
+    fun getTokenIntentsApi(apiKeyOverride: String? = null): TokenIntentsClient =
+        getApiClient(apiKeyOverride).tokenIntents()
 
     fun getProxyApi(dispatcher: CoroutineDispatcher = Dispatchers.IO): ProxyApi {
         requireNotNull(defaultApiKey)

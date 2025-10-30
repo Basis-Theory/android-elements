@@ -4,6 +4,7 @@ import android.app.Activity
 import android.view.View
 import com.basistheory.elements.constants.ElementValueType
 import com.basistheory.elements.model.CreateTokenRequest
+import com.basistheory.elements.model.CreateTokenIntentRequest
 import com.basistheory.elements.model.ElementValueReference
 import com.basistheory.elements.model.EncryptTokenRequest
 import com.basistheory.elements.model.EncryptTokenResponse
@@ -16,6 +17,7 @@ import com.basistheory.elements.view.CardNumberElement
 import com.basistheory.elements.view.CardVerificationCodeElement
 import com.basistheory.elements.view.TextElement
 import com.basistheory.resources.sessions.SessionsClient
+import com.basistheory.resources.tokenintents.TokenIntentsClient
 import com.basistheory.resources.tokens.TokensClient
 import com.github.javafaker.Faker
 import com.nimbusds.jose.JOSEException
@@ -103,6 +105,9 @@ class BasisTheoryElementsTests {
 
     @RelaxedMockK
     private lateinit var tokensApi: TokensClient
+
+    @RelaxedMockK
+    private lateinit var tokenIntentsApi: TokenIntentsClient
 
     @RelaxedMockK
     private lateinit var sessionsApi: SessionsClient
@@ -739,6 +744,173 @@ class BasisTheoryElementsTests {
         }
 
     @Test
+    fun `createTokenIntent should pass api key override to ApiClientProvider`() = runBlocking {
+        val apiKeyOverride = UUID.randomUUID().toString()
+
+        every { provider.getTokenIntentsApi(any()) } returns tokenIntentsApi
+        every { tokenIntentsApi.create(any()) } returns fakeTokenIntent()
+
+        bt.createTokenIntent(CreateTokenIntentRequest(type = "card", data = ""), apiKeyOverride)
+
+        verify { provider.getTokenIntentsApi(apiKeyOverride) }
+    }
+
+    @Test
+    fun `createTokenIntent should forward top level primitive value without modification`() =
+        runBlocking {
+            every { provider.getTokenIntentsApi(any()) } returns tokenIntentsApi
+            every { tokenIntentsApi.create(any()) } returns fakeTokenIntent()
+
+            val name = faker.name().fullName()
+            val createTokenIntentRequest = createTokenIntentRequest(name)
+            bt.createTokenIntent(createTokenIntentRequest)
+
+            verify { tokenIntentsApi.create(createTokenIntentRequest.toJava()) }
+        }
+
+    @Test
+    fun `createTokenIntent should forward complex data values within request without modification`() =
+        runBlocking {
+            every { provider.getTokenIntentsApi(any()) } returns tokenIntentsApi
+            every { tokenIntentsApi.create(any()) } returns fakeTokenIntent()
+
+            val data = object {
+                val string = faker.lorem().word()
+                val int = faker.random().nextInt(10, 100)
+                val nullValue = null
+                val nested = object {
+                    val double = faker.random().nextDouble()
+                    val bool = faker.random().nextBoolean()
+                    val timestamp = Instant.now().toString()
+                    val nullValue = null
+                }
+                val array = arrayOf<Any?>(
+                    faker.lorem().word(),
+                    faker.random().nextDouble(),
+                    faker.random().nextBoolean(),
+                    null
+                )
+            }
+            val request = createTokenIntentRequest(data)
+
+            bt.createTokenIntent(request)
+
+            val expectedData = mapOf(
+                "string" to data.string,
+                "int" to data.int,
+                "nullValue" to null,
+                "nested" to mapOf(
+                    "double" to data.nested.double,
+                    "bool" to data.nested.bool,
+                    "timestamp" to data.nested.timestamp,
+                    "nullValue" to null
+                ),
+                "array" to arrayListOf(
+                    data.array[0],
+                    data.array[1],
+                    data.array[2],
+                    null
+                )
+            )
+            val expectedRequest = createTokenIntentRequest(expectedData)
+
+            verify { tokenIntentsApi.create(expectedRequest.toJava()) }
+        }
+
+    @Test
+    fun `createTokenIntent should replace top level TextElement ref with underlying data value`() =
+        runBlocking {
+            every { provider.getTokenIntentsApi(any()) } returns tokenIntentsApi
+            every { tokenIntentsApi.create(any()) } returns fakeTokenIntent()
+
+            val name = faker.name().fullName()
+            nameElement.setText(name)
+
+            val createTokenIntentRequest = createTokenIntentRequest(nameElement)
+
+            bt.createTokenIntent(createTokenIntentRequest)
+
+            val expectedRequest = createTokenIntentRequest(name)
+
+            verify { tokenIntentsApi.create(expectedRequest.toJava()) }
+        }
+
+    @Test
+    fun `createTokenIntent should replace Element refs within request object with underlying data values`() =
+        runBlocking {
+            every { provider.getTokenIntentsApi(any()) } returns tokenIntentsApi
+            every { tokenIntentsApi.create(any()) } returns fakeTokenIntent()
+
+            val name = faker.name().fullName()
+            nameElement.setText(name)
+
+            val cardNumber = testCardNumbers.random()
+            cardNumberElement.setText(cardNumber)
+
+            val expDate = LocalDate.now().plus(2, ChronoUnit.YEARS)
+            val expMonth = expDate.monthValue.toString().padStart(2, '0')
+            val expYear = expDate.year.toString()
+            cardExpElement.setText("$expMonth/${expYear.takeLast(2)}")
+
+            val cvc = faker.random().nextInt(100, 999).toString()
+            cvcElement.setText(cvc)
+
+            val data = object {
+                val type = "card"
+                val data = object {
+                    val name = nameElement
+                    val number = cardNumberElement
+                    val expiration_month = cardExpElement.month()
+                    val expiration_year = cardExpElement.year()
+                    val cvc = cvcElement
+                }
+            }
+            val createTokenIntentRequest = createTokenIntentRequest(data)
+
+            bt.createTokenIntent(createTokenIntentRequest)
+
+            val expectedData = mapOf<String, Any?>(
+                "type" to data.type,
+                "data" to mapOf(
+                    "name" to name,
+                    "number" to cardNumber.replace(Regex("""[^\d]"""), ""),
+                    "expiration_month" to expDate.monthValue,
+                    "expiration_year" to expDate.year,
+                    "cvc" to cvc
+                )
+            )
+
+            val expectedCreateTokenIntentRequest = createTokenIntentRequest(expectedData)
+
+            verify { tokenIntentsApi.create(expectedCreateTokenIntentRequest.toJava()) }
+        }
+
+    @Test
+    fun `createTokenIntent throws ApiException when an exception occurs`(): Unit =
+        runBlocking {
+            every { provider.getTokenIntentsApi(any()) } returns tokenIntentsApi
+
+            every { tokenIntentsApi.create(any()) } throws com.basistheory.core.BasisTheoryApiApiException(
+                "Api Error",
+                401,
+                ""
+            )
+
+            val createTokenIntentRequest = CreateTokenIntentRequest(type = "card", data = "")
+
+            expectCatching {
+                bt.createTokenIntent(
+                    createTokenIntentRequest,
+                    apiKeyOverride = faker.name().firstName()
+                )
+            }
+                .isFailure()
+                .isA<ApiException>().and {
+                    get { code }.isEqualTo(401)
+                }
+        }
+
+    @Test
     fun `proxy should replace Element refs within request object with underlying data values`() {
         val name = faker.name().fullName()
         nameElement.setText(name)
@@ -1343,6 +1515,9 @@ class BasisTheoryElementsTests {
     private fun createTokenRequest(data: Any): CreateTokenRequest =
         CreateTokenRequest(type = "token", data = data)
 
+    private fun createTokenIntentRequest(data: Any): CreateTokenIntentRequest =
+        CreateTokenIntentRequest(type = "card", data = data)
+
     private fun incompleteCardThrowsIncompleteElementException(
         incompleteCardNumber: String
     ) = runBlocking {
@@ -1383,6 +1558,15 @@ class BasisTheoryElementsTests {
             .expiresAt(OffsetDateTime.now().plusHours(1))
             .build()
 
+    private fun fakeTokenIntent(): com.basistheory.types.CreateTokenIntentResponse =
+        com.basistheory.types.CreateTokenIntentResponse.builder()
+            .id(UUID.randomUUID().toString())
+            .tenantId(UUID.randomUUID().toString())
+            .type("card")
+            .createdBy(UUID.randomUUID().toString())
+            .createdAt(OffsetDateTime.now())
+            .expiresAt(OffsetDateTime.now().plusMinutes(15))
+            .build()
 
     private fun setupProxyMocks(requestSlot: CapturingSlot<Request> = slot()):
             CapturingSlot<Request> {

@@ -4,10 +4,12 @@ import HttpClient
 import com.basistheory.elements.constants.ElementValueType
 import com.basistheory.elements.model.CreateSessionResponse
 import com.basistheory.elements.model.CreateTokenRequest
+import com.basistheory.elements.model.CreateTokenIntentRequest
 import com.basistheory.elements.model.ElementValueReference
 import com.basistheory.elements.model.EncryptTokenRequest
 import com.basistheory.elements.model.EncryptTokenResponse
 import com.basistheory.elements.model.Token
+import com.basistheory.elements.model.TokenIntent
 import com.basistheory.elements.model.exceptions.ApiException
 import com.basistheory.elements.model.exceptions.EncryptTokenException
 import com.basistheory.elements.model.toAndroid
@@ -154,6 +156,30 @@ class BasisTheoryElements internal constructor(
         is ElementValueReference -> data.getValue().toValueType(data.getValueType)
         else -> if (data::class.java.isPrimitiveType()) data else replaceElementRefs(data.toMap())
     }
+    @JvmOverloads
+    suspend fun createTokenIntent(
+        createTokenIntentRequest: CreateTokenIntentRequest,
+        apiKeyOverride: String? = null
+    ): TokenIntent =
+        try {
+            withContext(dispatcher) {
+                val tokenIntentsApi = apiClientProvider.getTokenIntentsApi(apiKeyOverride)
+                val data =
+                    if (createTokenIntentRequest.data::class.java.isPrimitiveType()) createTokenIntentRequest.data
+                    else if (createTokenIntentRequest.data is TextElement) (createTokenIntentRequest.data as TextElement).tryGetTextToTokenize()
+                        .toValueType((createTokenIntentRequest.data as TextElement).getValueType)
+                    else if (createTokenIntentRequest.data is ElementValueReference) (createTokenIntentRequest.data as ElementValueReference).getValue()
+                        .toValueType((createTokenIntentRequest.data as ElementValueReference).getValueType)
+                    else replaceElementRefs(createTokenIntentRequest.data.toMap())
+
+                createTokenIntentRequest.data = data!!
+
+                tokenIntentsApi.create(createTokenIntentRequest.toJava()).toAndroid()
+            }
+        } catch (e: com.basistheory.core.BasisTheoryApiApiException) {
+            throw ApiException(e.statusCode(), e.headers(), e.body().toString(), e.message)
+        }
+
 
     companion object {
         @JvmStatic
