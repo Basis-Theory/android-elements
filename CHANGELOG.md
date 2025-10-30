@@ -1,3 +1,11 @@
+## [2.1.0](https://github.com/Basis-Theory/android-elements/compare/2.0.0...2.1.0) (2025-10-30)
+
+
+### Features
+
+* adds token intents ([#23](https://github.com/Basis-Theory/android-elements/issues/23)) ([e83f20f](https://github.com/Basis-Theory/android-elements/commit/e83f20f01a7cfbdceefc97c37806e5ccf52b6195))
+
+
 ## [2.0.0](https://github.com/Basis-Theory/android-elements/compare/1.2.0...2.0.0) (2025-10-29)
 
 
