@@ -30,6 +30,10 @@ internal class ApiClientProvider(
         val apiKey = apiKeyOverride ?: defaultApiKey
         requireNotNull(apiKey)
 
-        return BasisTheoryApiClient.builder().apiKey(apiKey).url(apiUrl).build()
+        return BasisTheoryApiClient.builder()
+            .apiKey(apiKey)
+            .url(apiUrl)
+            .httpClient(createHttpClientWithDeviceInfo())
+            .build()
     }
 }

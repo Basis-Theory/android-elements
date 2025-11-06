@@ -1,13 +1,16 @@
 package com.basistheory.elements.service
 
 import com.basistheory.elements.model.ElementValueReference
+import com.basistheory.elements.util.getEncodedDeviceInfo
 import io.mockk.CapturingSlot
 import io.mockk.every
 import io.mockk.impl.annotations.MockK
 import io.mockk.junit4.MockKRule
 import io.mockk.just
+import io.mockk.mockkStatic
 import io.mockk.runs
 import io.mockk.slot
+import io.mockk.unmockkStatic
 import io.mockk.verify
 import junitparams.JUnitParamsRunner
 import junitparams.Parameters
@@ -225,6 +228,34 @@ class ProxyApiTests {
 
         expectThat(
             (result as List<Any?>).filterNotNull().all { it is ElementValueReference }).isTrue()
+    }
+
+    @Test
+    fun `proxy request includes device info header when available`() {
+        mockkStatic("com.basistheory.elements.util.DeviceInfoKt")
+        every { getEncodedDeviceInfo() } returns "eyJ0ZXN0IjoidmFsdWUifQ=="
+
+        val requestSlot: CapturingSlot<Request> = slot()
+        val responseJson = """{"foo": "bar"}"""
+
+        setupMocks(responseJson)
+
+        val proxyRequest = ProxyRequest().apply {
+            path = "/test"
+        }
+
+        runBlocking {
+            proxyApi.post(proxyRequest)
+        }
+
+        verify { mockHttpClient.newCall(capture(requestSlot)) }
+
+        val capturedRequest = requestSlot.captured
+        val deviceInfoHeader = capturedRequest.header("BT-DEVICE-INFO")
+
+        expectThat(deviceInfoHeader).isEqualTo("eyJ0ZXN0IjoidmFsdWUifQ==")
+
+        unmockkStatic("com.basistheory.elements.util.DeviceInfoKt")
     }
 
     private fun proxyMethodsTestsInput(): Array<Any?> {
