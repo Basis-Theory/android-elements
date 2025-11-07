@@ -34,6 +34,7 @@ open class ApiViewModel(application: Application) : AndroidViewModel(application
         .apiKey(BuildConfig.BASIS_THEORY_API_KEY)
         .build()
 
+    internal fun getBasisTheoryElements(): BasisTheoryElements = bt
 
     val client = Client()
 

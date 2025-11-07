@@ -4,8 +4,18 @@ import android.app.Activity
 import com.basistheory.elements.constants.CardBrands
 import com.basistheory.elements.event.ChangeEvent
 import com.basistheory.elements.event.EventDetails
+import com.basistheory.elements.model.BinDetails
+import com.basistheory.elements.service.BasisTheoryElements
 import com.basistheory.elements.service.CardBrandEnricher
 import com.basistheory.elements.view.mask.ElementMask
+import com.basistheory.types.CardDetailsResponse
+import io.mockk.coEvery
+import io.mockk.coVerify
+import io.mockk.every
+import io.mockk.mockk
+import io.mockk.verify
+import kotlinx.coroutines.test.runTest
+import java.util.Optional
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -256,5 +266,78 @@ class CardNumberElementTests {
         cardNumberElement.setText("3782 822463 10005")
 
         expectThat(cardNumberElement.cardMetadata?.bin).isEqualTo("378282")
+    }
+
+    @Test
+    fun `bin lookup is disabled by default`() {
+        expectThat(cardNumberElement.binLookup).isFalse()
+        expectThat(cardNumberElement.binDetails).isNull()
+    }
+
+    @Test
+    fun `bin lookup can be enabled and disabled`() {
+        cardNumberElement.binLookup = true
+        expectThat(cardNumberElement.binLookup).isTrue()
+
+        cardNumberElement.binLookup = false
+        expectThat(cardNumberElement.binLookup).isFalse()
+    }
+
+    @Test
+    fun `bin lookup does not trigger when BasisTheoryElements is not set`() = runTest {
+        cardNumberElement.binLookup = true
+        cardNumberElement.setText("4242424242424242")
+        expectThat(cardNumberElement.binDetails).isNull()
+    }
+
+    @Test
+    fun `bin lookup triggers when BasisTheoryElements is set`() {
+        val mockBasisTheoryElements = mockk<BasisTheoryElements>()
+
+        cardNumberElement.setBasisTheoryElements(mockBasisTheoryElements)
+        cardNumberElement.binLookup = true
+
+        cardNumberElement.setText("4242424242424242")
+
+        expectThat(cardNumberElement.binLookup).isTrue()
+    }
+
+    @Test
+    fun `bin lookup only triggers for 6+ digits`() {
+        val mockBasisTheoryElements = mockk<BasisTheoryElements>()
+
+        cardNumberElement.setBasisTheoryElements(mockBasisTheoryElements)
+        cardNumberElement.binLookup = true
+
+        cardNumberElement.setText("42424")
+        cardNumberElement.setText("424242")
+        cardNumberElement.setText("4242421")
+        cardNumberElement.setText("555555")
+
+        expectThat(cardNumberElement.binLookup).isTrue()
+    }
+
+    @Test
+    fun `bin lookup clears when card is too short`() {
+        cardNumberElement.binLookup = true
+
+        cardNumberElement.setText("4242424242424242")
+        cardNumberElement.setText("424")
+
+        expectThat(cardNumberElement.binDetails).isNull()
+    }
+
+    @Test
+    fun `bin lookup handles API errors gracefully`() = runTest {
+        val mockBasisTheoryElements = mockk<BasisTheoryElements>()
+
+        coEvery { mockBasisTheoryElements.getCardDetails("424242") } throws RuntimeException("API Error")
+
+        cardNumberElement.setBasisTheoryElements(mockBasisTheoryElements)
+        cardNumberElement.binLookup = true
+
+        cardNumberElement.setText("4242424242424242")
+
+        expectThat(cardNumberElement.binDetails).isNull()
     }
 }

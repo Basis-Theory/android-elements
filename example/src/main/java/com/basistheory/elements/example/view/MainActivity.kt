@@ -11,6 +11,7 @@ import androidx.navigation.ui.setupActionBarWithNavController
 import androidx.navigation.ui.setupWithNavController
 import com.basistheory.elements.example.R
 import com.basistheory.elements.example.databinding.ActivityMainBinding
+import com.basistheory.elements.service.BasisTheoryElements
 import com.google.android.material.navigation.NavigationView
 
 class MainActivity : AppCompatActivity() {

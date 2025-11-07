@@ -1,6 +1,7 @@
 package com.basistheory.elements.service
 
 import com.basistheory.BasisTheoryApiClient
+import com.basistheory.resources.enrichments.EnrichmentsClient
 import com.basistheory.resources.sessions.SessionsClient
 import com.basistheory.resources.tokenintents.TokenIntentsClient
 import com.basistheory.resources.tokens.TokensClient
@@ -19,6 +20,9 @@ internal class ApiClientProvider(
 
     fun getTokenIntentsApi(apiKeyOverride: String? = null): TokenIntentsClient =
         getApiClient(apiKeyOverride).tokenIntents()
+
+    fun getEnrichmentsApi(apiKeyOverride: String? = null): EnrichmentsClient =
+        getApiClient(apiKeyOverride).enrichments()
 
     fun getProxyApi(dispatcher: CoroutineDispatcher = Dispatchers.IO): ProxyApi {
         requireNotNull(defaultApiKey)
