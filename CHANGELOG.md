@@ -1,3 +1,11 @@
+## [2.2.0](https://github.com/Basis-Theory/android-elements/compare/2.1.0...2.2.0) (2025-11-13)
+
+
+### Features
+
+* expose device info on requests ([#24](https://github.com/Basis-Theory/android-elements/issues/24)) ([97ca697](https://github.com/Basis-Theory/android-elements/commit/97ca6971ff6ac13cc67a35564a80690d84825f40))
+
+
 ## [2.1.0](https://github.com/Basis-Theory/android-elements/compare/2.0.0...2.1.0) (2025-10-30)
 
 

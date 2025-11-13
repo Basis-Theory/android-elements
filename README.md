@@ -26,7 +26,7 @@ Add this dependency to your project's build file:
   }
 
   dependencies {
-      implementation 'com.github.basis-theory:android-elements:2.1.0'
+      implementation 'com.github.basis-theory:android-elements:2.2.0'
   }
 ```
 
