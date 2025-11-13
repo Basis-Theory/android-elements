@@ -65,6 +65,10 @@ class HttpClient(private val dispatcher: CoroutineDispatcher = Dispatchers.IO) :
             req.addHeader(key, value)
         }
 
+        getEncodedDeviceInfo()?.let { deviceInfo ->
+            req.addHeader("BT-DEVICE-INFO", deviceInfo)
+        }
+
         return req.build()
     }
 

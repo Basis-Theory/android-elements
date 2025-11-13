@@ -1,3 +1,7 @@
+import com.basistheory.elements.util.getEncodedDeviceInfo
+import io.mockk.every
+import io.mockk.mockkStatic
+import io.mockk.unmockkStatic
 import junitparams.JUnitParamsRunner
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking
@@ -195,5 +199,24 @@ class HttpClientTests {
         }
 
         assertEquals("Content-Type not supported", exception.message)
+    }
+
+    @Test
+    fun `testIncludesDeviceInfoHeaderWhenAvailable`() = runBlocking {
+        mockkStatic("com.basistheory.elements.util.DeviceInfoKt")
+        every { getEncodedDeviceInfo() } returns "eyJ0ZXN0IjoidmFsdWUifQ=="
+
+        server.enqueue(MockResponse().setBody("Success"))
+
+        val url = server.url(endpoint).toString()
+
+        client.post(url, "test body")
+
+        val request = server.takeRequest()
+        val deviceInfoHeader = request.getHeader("BT-DEVICE-INFO")
+
+        assertEquals("eyJ0ZXN0IjoidmFsdWUifQ==", deviceInfoHeader)
+
+        unmockkStatic("com.basistheory.elements.util.DeviceInfoKt")
     }
 }

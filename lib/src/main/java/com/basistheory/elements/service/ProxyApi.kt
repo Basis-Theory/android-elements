@@ -2,6 +2,7 @@ package com.basistheory.elements.service
 
 import com.basistheory.elements.model.ElementValueReference
 import com.basistheory.elements.model.exceptions.ApiException
+import com.basistheory.elements.util.getEncodedDeviceInfo
 import com.basistheory.elements.util.isPrimitiveType
 import com.basistheory.elements.util.replaceElementRefs
 import com.basistheory.elements.util.toMap
@@ -127,6 +128,10 @@ class ProxyApi(
                 }
                 val apiKey = apiKeyOverride ?: apiKey
                 addHeader("BT-API-KEY", apiKey)
+
+                getEncodedDeviceInfo()?.let { deviceInfo ->
+                    addHeader("BT-DEVICE-INFO", deviceInfo)
+                }
             }
             .build()
 
