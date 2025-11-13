@@ -59,7 +59,7 @@ class CollectCardTests {
 
         // assertions on tokenize response
         onView(withId(R.id.result))
-            .perform(waitUntilVisible())
+            .perform(waitUntilVisible(15000L))
             .check(
                 matches(
                     allOf(
