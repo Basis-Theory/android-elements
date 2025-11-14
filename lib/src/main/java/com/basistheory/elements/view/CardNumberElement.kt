@@ -2,14 +2,24 @@ package com.basistheory.elements.view
 
 import android.content.Context
 import android.util.AttributeSet
+import android.util.Log
 import com.basistheory.elements.event.ChangeEvent
 import com.basistheory.elements.event.EventDetails
+import com.basistheory.elements.model.BinDetails
 import com.basistheory.elements.model.CardMetadata
 import com.basistheory.elements.model.InputType
+import com.basistheory.elements.service.ApiClientProvider
 import com.basistheory.elements.service.CardBrandEnricher
+import com.basistheory.elements.util.BinDetailsCache
 import com.basistheory.elements.view.mask.ElementMask
 import com.basistheory.elements.view.transform.RegexReplaceElementTransform
 import com.basistheory.elements.view.validation.LuhnValidator
+import com.basistheory.resources.enrichments.requests.EnrichmentsGetCardDetailsRequest
+import com.basistheory.types.CardDetailsResponse
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.launch
 
 class CardNumberElement @JvmOverloads constructor(
     context: Context,
@@ -18,6 +28,10 @@ class CardNumberElement @JvmOverloads constructor(
 ) : TextElement(context, attrs, defStyleAttr) {
 
     private val cardBrandEnricher: CardBrandEnricher = CardBrandEnricher()
+    private var binDetailsFetchJob: Job? = null
+    private val coroutineScope = CoroutineScope(Dispatchers.Main)
+    private var lastFetchedBin: String? = null
+    private var basisTheoryElements: com.basistheory.elements.service.BasisTheoryElements? = null
 
     init {
         super.inputType = InputType.NUMBER
@@ -31,8 +45,18 @@ class CardNumberElement @JvmOverloads constructor(
 
     internal var cvcMask: String? = null
 
+    var binDetails: BinDetails? = null
+        private set
+
+    var binLookup: Boolean = false
+
+    fun setBasisTheoryElements(basisTheoryElements: com.basistheory.elements.service.BasisTheoryElements) {
+        this.basisTheoryElements = basisTheoryElements
+    }
+
     override fun beforeTextChanged(value: String?): String? {
         val cardDigits = getDigitsOnly(value)
+        val bin = cardDigits?.take(6)
         val cardBrandDetails = cardBrandEnricher.evaluateCard(cardDigits)
 
         if (cardBrandDetails != null)
@@ -52,7 +76,47 @@ class CardNumberElement @JvmOverloads constructor(
         )
         cvcMask = cardBrandDetails?.cvcMask
 
+        if (binLookup && bin != null && bin.length == 6 && bin != lastFetchedBin) {
+            fetchBinDetails(bin)
+        }
+
+        if (bin == null || bin.length < 6) {
+            lastFetchedBin = null
+            if (binDetails != null) {
+                binDetails = null
+                publishChangeEvent()
+            }
+        }
+
         return value
+    }
+
+    private fun fetchBinDetails(bin: String) {
+        binDetailsFetchJob?.cancel()
+        binDetailsFetchJob = coroutineScope.launch {
+            try {
+                BinDetailsCache.get(bin)?.let { cachedDetails ->
+                    updateBinDetails(cachedDetails)
+                    return@launch
+                }
+
+                val response = basisTheoryElements?.getCardDetails(bin)
+
+                response?.let {
+                    val binDetails = BinDetails.fromResponse(it)
+
+                    BinDetailsCache.put(bin, binDetails)
+                    updateBinDetails(binDetails)
+                }
+            } catch (e: Exception) {
+                Log.e("CardNumberElement", "Error fetching BIN details", e)
+            }
+        }
+    }
+
+    private fun updateBinDetails(binDetails: BinDetails) {
+        this.binDetails = binDetails
+        publishChangeEvent()
     }
 
     override fun createElementChangeEvent(): ChangeEvent {
@@ -80,6 +144,16 @@ class CardNumberElement @JvmOverloads constructor(
                 EventDetails(
                     EventDetails.CardLast4,
                     value.takeLast(4)
+                )
+            )
+        }
+
+        this.binDetails?.let {
+            eventDetails.add(
+                EventDetails(
+                    EventDetails.BinDetails,
+                    "binDetails",
+                    it
                 )
             )
         }

@@ -1,6 +1,7 @@
 package com.basistheory.elements.example.view.card
 
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -9,6 +10,7 @@ import androidx.fragment.app.viewModels
 import com.basistheory.elements.example.databinding.FragmentCardBinding
 import com.basistheory.elements.example.util.tokenExpirationTimestamp
 import com.basistheory.elements.example.viewmodel.CardFragmentViewModel
+import com.basistheory.elements.service.BasisTheoryElements
 
 class CardFragment : Fragment() {
     private val binding: FragmentCardBinding by lazy {
@@ -26,6 +28,10 @@ class CardFragment : Fragment() {
         binding.viewModel = viewModel
 
         binding.cvc.cardNumberElement = binding.cardNumber
+
+        viewModel.setupCardNumberElement(binding.cardNumber)
+
+        binding.cardNumber.binLookup = true
 
         binding.tokenizeButton.setOnClickListener { tokenize() }
         binding.autofillButton.setOnClickListener { autofill() }
@@ -58,8 +64,9 @@ class CardFragment : Fragment() {
      * demonstrates how an application could potentially wire up custom validation behaviors
      */
     private fun setValidationListeners() {
-        binding.cardNumber.addChangeEventListener {
-            viewModel.cardNumber.observe(it)
+        binding.cardNumber.addChangeEventListener { event ->
+            viewModel.cardNumber.observe(event)
+            Log.d("Event", event.toString())
         }
         binding.expirationDate.addChangeEventListener {
             viewModel.cardExpiration.observe(it)

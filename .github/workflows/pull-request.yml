@@ -63,7 +63,11 @@ jobs:
           target: default
           arch: x86_64
           profile: pixel_3a
-          script: ./gradlew connectedCheck
+          script: |
+            adb shell settings put global window_animation_scale 0
+            adb shell settings put global transition_animation_scale 0
+            adb shell settings put global animator_duration_scale 0
+            ./gradlew connectedCheck
 
   security:
     name: Security scan

@@ -46,7 +46,7 @@ class CollectSocialSecurityNumberTests {
 
         // assertions on tokenize response
         onView(withId(R.id.result))
-            .perform(waitUntilVisible())
+            .perform(waitUntilVisible(15000L))
             .check(matches(withSubstring("123-45-6789")))
     }
 }

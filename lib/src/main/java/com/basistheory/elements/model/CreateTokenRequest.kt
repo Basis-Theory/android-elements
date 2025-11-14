@@ -27,8 +27,8 @@ class CreateTokenRequest(
     var tokenIntentId: String? = null,
 )
 
-internal fun CreateTokenRequest.toJava(): com.basistheory.resources.tokens.requests.CreateTokenRequest =
-    com.basistheory.resources.tokens.requests.CreateTokenRequest.builder()
+internal fun CreateTokenRequest.toJava(): com.basistheory.types.CreateTokenRequest =
+    com.basistheory.types.CreateTokenRequest.builder()
         .id(this@toJava.id)
         .data(this@toJava.data)
         .type(this@toJava.type)

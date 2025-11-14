@@ -4,6 +4,7 @@ import android.app.Application
 import androidx.lifecycle.MediatorLiveData
 import androidx.lifecycle.MutableLiveData
 import com.basistheory.elements.event.ChangeEvent
+import com.basistheory.elements.view.CardNumberElement
 
 class CardFragmentViewModel(application: Application) : ApiViewModel(application) {
     val cardNumber = ElementViewModel()
@@ -24,6 +25,10 @@ class CardFragmentViewModel(application: Application) : ApiViewModel(application
 
     private fun coalesce(vararg states: Boolean?): Boolean =
         states.all { it == true }
+
+    fun setupCardNumberElement(cardNumberElement: CardNumberElement) {
+        cardNumberElement.setBasisTheoryElements(getBasisTheoryElements())
+    }
 }
 
 class ElementViewModel {
