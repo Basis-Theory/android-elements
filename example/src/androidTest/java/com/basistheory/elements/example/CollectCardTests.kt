@@ -7,6 +7,8 @@ import androidx.test.espresso.contrib.DrawerActions
 import androidx.test.espresso.matcher.ViewMatchers.*
 import androidx.test.ext.junit.rules.activityScenarioRule
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import com.basistheory.elements.example.util.clearTextElement
+import com.basistheory.elements.example.util.waitUntilGone
 import com.basistheory.elements.example.util.waitUntilVisible
 import com.basistheory.elements.example.view.MainActivity
 import org.hamcrest.Matchers.allOf
@@ -108,5 +110,70 @@ class CollectCardTests {
 
         // assert tokenize is disabled
         onView(withId(R.id.tokenize_button)).check(matches(not(isEnabled())))
+    }
+
+    @Test
+    fun cobadgeWorkflowShowsMultipleBrands() {
+        onView(withId(R.id.card_number)).perform(scrollTo(), typeText("4020971234567899"))
+
+        onView(withId(R.id.card_brand_selector))
+            .perform(waitUntilVisible(10000L))
+            .check(matches(isDisplayed()))
+    }
+
+    @Test
+    fun cobadgeWorkflowClearsWhenCardNumberCleared() {
+        onView(withId(R.id.card_number)).perform(scrollTo(), typeText("4020971234567899"))
+
+        onView(withId(R.id.card_brand_selector))
+            .perform(waitUntilVisible(10000L))
+            .check(matches(isDisplayed()))
+
+        onView(withId(R.id.card_number)).perform(scrollTo(), clearTextElement())
+
+        onView(withId(R.id.card_brand_selector))
+            .perform(waitUntilGone(5000L))
+            .check(matches(not(isDisplayed())))
+    }
+
+    @Test
+    fun cobadgeWorkflowTokenizeDisabledUntilBrandSelected() {
+        val expMonth = "11"
+        val expYear = (LocalDate.now().year + 1).toString()
+        val cvc = "123"
+
+        onView(withId(R.id.card_number)).perform(scrollTo(), typeText("4020971234567899"))
+        onView(withId(R.id.expiration_date)).perform(
+            scrollTo(),
+            typeText("$expMonth/${expYear.takeLast(2)}")
+        )
+        onView(withId(R.id.cvc)).perform(scrollTo(), typeText(cvc))
+
+        onView(withId(R.id.card_brand_selector))
+            .perform(waitUntilVisible(10000L))
+
+        onView(withId(R.id.tokenize_button)).check(matches(not(isEnabled())))
+    }
+
+    @Test
+    fun cobadgeWorkflowTokenizeEnabledAfterBrandSelected() {
+        val expMonth = "11"
+        val expYear = (LocalDate.now().year + 1).toString()
+        val cvc = "123"
+
+        onView(withId(R.id.card_number)).perform(scrollTo(), typeText("4020971234567899"))
+        onView(withId(R.id.expiration_date)).perform(
+            scrollTo(),
+            typeText("$expMonth/${expYear.takeLast(2)}")
+        )
+        onView(withId(R.id.cvc)).perform(scrollTo(), typeText(cvc))
+
+        onView(withId(R.id.card_brand_selector))
+            .perform(waitUntilVisible(10000L))
+
+        onView(withId(R.id.card_brand_selector)).perform(click())
+        onView(withText("CARTES BANCAIRES")).perform(click())
+
+        onView(withId(R.id.tokenize_button)).check(matches(isEnabled()))
     }
 }

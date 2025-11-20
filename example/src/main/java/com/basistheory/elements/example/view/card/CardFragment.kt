@@ -7,10 +7,12 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
+import com.basistheory.elements.constants.CoBadgedSupport
 import com.basistheory.elements.example.databinding.FragmentCardBinding
 import com.basistheory.elements.example.util.tokenExpirationTimestamp
 import com.basistheory.elements.example.viewmodel.CardFragmentViewModel
 import com.basistheory.elements.service.BasisTheoryElements
+import com.basistheory.elements.view.CardBrandSelectorOptions
 
 class CardFragment : Fragment() {
     private val binding: FragmentCardBinding by lazy {
@@ -32,6 +34,11 @@ class CardFragment : Fragment() {
         viewModel.setupCardNumberElement(binding.cardNumber)
 
         binding.cardNumber.binLookup = true
+        binding.cardNumber.coBadgedSupport = listOf(CoBadgedSupport.CARTES_BANCAIRES)
+
+        // Configure CardBrandSelector
+        val brandSelectorOptions = CardBrandSelectorOptions(cardNumberElement = binding.cardNumber)
+        binding.cardBrandSelector.setConfig(brandSelectorOptions)
 
         binding.tokenizeButton.setOnClickListener { tokenize() }
         binding.autofillButton.setOnClickListener { autofill() }
@@ -66,7 +73,6 @@ class CardFragment : Fragment() {
     private fun setValidationListeners() {
         binding.cardNumber.addChangeEventListener { event ->
             viewModel.cardNumber.observe(event)
-            Log.d("Event", event.toString())
         }
         binding.expirationDate.addChangeEventListener {
             viewModel.cardExpiration.observe(it)

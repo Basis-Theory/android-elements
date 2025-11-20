@@ -1,8 +1,14 @@
 package com.basistheory.elements.view
 
+import android.content.BroadcastReceiver
 import android.content.Context
+import android.content.Intent
+import android.content.IntentFilter
 import android.util.AttributeSet
 import android.util.Log
+import androidx.localbroadcastmanager.content.LocalBroadcastManager
+import com.basistheory.elements.constants.CardBrands
+import com.basistheory.elements.constants.CoBadgedSupport
 import com.basistheory.elements.event.ChangeEvent
 import com.basistheory.elements.event.EventDetails
 import com.basistheory.elements.model.BinDetails
@@ -33,11 +39,29 @@ class CardNumberElement @JvmOverloads constructor(
     private var lastFetchedBin: String? = null
     private var basisTheoryElements: com.basistheory.elements.service.BasisTheoryElements? = null
 
+    var coBadgedSupport: List<CoBadgedSupport>? = null
+    internal var selectedNetwork: String? = null
+
+    private val brandSelectionReceiver = object : BroadcastReceiver() {
+        override fun onReceive(context: Context?, intent: Intent?) {
+            if (intent?.action == CardBrandSelector.ACTION_BRAND_SELECTED) {
+                val brandName = intent.getStringExtra(CardBrandSelector.EXTRA_SELECTED_BRAND)
+                brandName?.let {
+                    selectedNetwork = it
+                    publishChangeEvent()
+                }
+            }
+        }
+    }
+
     init {
         super.inputType = InputType.NUMBER
         super.mask = defaultMask
         super.transform = RegexReplaceElementTransform(Regex("""\s"""), "")
         super.validator = LuhnValidator()
+
+        val filter = IntentFilter(CardBrandSelector.ACTION_BRAND_SELECTED)
+        LocalBroadcastManager.getInstance(context).registerReceiver(brandSelectionReceiver, filter)
     }
 
     var cardMetadata: CardMetadata? = null
@@ -83,6 +107,7 @@ class CardNumberElement @JvmOverloads constructor(
         if (bin == null || bin.length < 6) {
             lastFetchedBin = null
             if (binDetails != null) {
+                clearBinInfo()
                 binDetails = null
                 publishChangeEvent()
             }
@@ -116,7 +141,71 @@ class CardNumberElement @JvmOverloads constructor(
 
     private fun updateBinDetails(binDetails: BinDetails) {
         this.binDetails = binDetails
+
+        if (!coBadgedSupport.isNullOrEmpty()) {
+            updateBrandSelectorOptions()
+        }
+
         publishChangeEvent()
+    }
+
+    private fun updateBrandSelectorOptions() {
+        val binDetails = this.binDetails ?: return
+
+        val brands = mutableListOf<String>()
+        binDetails.brand?.let { brands.add(it) }
+
+        val additionalBrands = getValidAdditionalBrands()
+        brands.addAll(additionalBrands)
+
+        val intent = Intent(CardBrandSelector.ACTION_BRAND_OPTIONS_UPDATED).apply {
+            putStringArrayListExtra(CardBrandSelector.EXTRA_BRAND_OPTIONS, ArrayList(brands))
+        }
+        LocalBroadcastManager.getInstance(context).sendBroadcast(intent)
+    }
+
+    private fun getValidAdditionalBrands(): List<String> {
+        val binDetails = this.binDetails ?: return emptyList()
+        val coBadgedSupport = this.coBadgedSupport ?: return emptyList()
+
+        if (coBadgedSupport.isEmpty()) return emptyList()
+
+        val supportedValues = coBadgedSupport.map { it.value }
+        val validBrands = mutableListOf<String>()
+
+        binDetails.additional?.forEach { additional ->
+            val brandName = additional.brand ?: return@forEach
+
+            if (isValidBrand(brandName, supportedValues)) {
+                validBrands.add(brandName)
+            }
+        }
+
+        return validBrands
+    }
+
+    private fun isValidBrand(brandName: String, supportedBy: List<String>): Boolean {
+        val normalizedBrandName = brandName.lowercase().replace(" ", "-")
+
+        val isValid = CardBrands.values().any { it.label == normalizedBrandName }
+        val isSupported = supportedBy.contains(normalizedBrandName)
+
+        return isValid && isSupported
+    }
+
+    private fun clearBinInfo() {
+        if (binDetails == null && selectedNetwork == null) return
+
+        binDetails = null
+        selectedNetwork = null
+        lastFetchedBin = null
+
+        if (!coBadgedSupport.isNullOrEmpty()) {
+            val intent = Intent(CardBrandSelector.ACTION_BRAND_OPTIONS_UPDATED).apply {
+                putStringArrayListExtra(CardBrandSelector.EXTRA_BRAND_OPTIONS, ArrayList())
+            }
+            LocalBroadcastManager.getInstance(context).sendBroadcast(intent)
+        }
     }
 
     override fun createElementChangeEvent(): ChangeEvent {
@@ -158,12 +247,17 @@ class CardNumberElement @JvmOverloads constructor(
             )
         }
 
+        val hasValidAdditionalBrands = getValidAdditionalBrands().isNotEmpty()
+        val needsBrandSelection = !coBadgedSupport.isNullOrEmpty() && hasValidAdditionalBrands && selectedNetwork == null
+        val complete = isMaskSatisfied && isValid && !needsBrandSelection
+
         return ChangeEvent(
-            isComplete,
+            complete,
             isEmpty,
             isValid,
             isMaskSatisfied,
-            eventDetails
+            eventDetails,
+            selectedNetwork
         )
     }
 
@@ -173,6 +267,11 @@ class CardNumberElement @JvmOverloads constructor(
     }
 
     private fun String.binLength() = if(this.length >= 16) 8 else 6
+
+    override fun onDetachedFromWindow() {
+        super.onDetachedFromWindow()
+        LocalBroadcastManager.getInstance(context).unregisterReceiver(brandSelectionReceiver)
+    }
 
     companion object {
         private val digit = Regex("""\d""")

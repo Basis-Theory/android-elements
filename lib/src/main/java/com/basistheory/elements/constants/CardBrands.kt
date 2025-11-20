@@ -12,5 +12,6 @@ enum class CardBrands(val label: String) {
     ELO("elo"),
     MIR("mir"),
     HIPER("hiper"),
-    HIPERCARD("hipercard")
+    HIPERCARD("hipercard"),
+    CARTES_BANCAIRES("cartes-bancaires")
 }
