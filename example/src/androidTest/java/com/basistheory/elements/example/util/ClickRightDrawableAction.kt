@@ -13,6 +13,10 @@ fun clickOnRightDrawable(): ViewAction {
     return ClickRightDrawableAction()
 }
 
+fun clearTextElement(): ViewAction {
+    return ClearTextAction()
+}
+
 private class ClickRightDrawableAction() : ViewAction {
     override fun getConstraints(): Matcher<View> {
         return allOf(ViewMatchers.isDisplayed(), withDrawableRight())
@@ -65,4 +69,16 @@ private class ClickRightDrawableAction() : ViewAction {
     }
 }
 
+private class ClearTextAction : ViewAction {
+    override fun getConstraints(): Matcher<View> {
+        return ViewMatchers.isDisplayed()
+    }
 
+    override fun getDescription(): String {
+        return "clear text on TextElement"
+    }
+
+    override fun perform(uiController: UiController, view: View) {
+        (view as? TextElement)?.clear()
+    }
+}

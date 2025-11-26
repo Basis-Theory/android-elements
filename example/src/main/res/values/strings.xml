@@ -29,6 +29,7 @@
     <string name="name">Name</string>
     <string name="social_security_number">Social Security Number</string>
     <string name="card_number">Card Number</string>
+    <string name="select_brand">Select Brand</string>
     <string name="expiration_date">Expiration Date</string>
     <string name="cvc">CVC</string>
     <string name="revealed_card_number">Revealed Card Number</string>

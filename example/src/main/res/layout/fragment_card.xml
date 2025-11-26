@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools">
 
     <data>
@@ -27,13 +28,22 @@
                 android:layout_margin="20dp"
                 android:orientation="vertical">
 
+                <com.basistheory.elements.view.CardBrandSelector
+                    android:id="@+id/card_brand_selector"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="10dp"
+                    android:background="#00A4BA"
+                    android:text="@string/select_brand"
+                    android:textColor="@android:color/white" />
+
                 <com.basistheory.elements.view.CardNumberElement
                     android:id="@+id/card_number"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:background="@drawable/rounded_edit_text"
-                    android:padding="5dp"
                     android:hint="@string/card_number"
+                    android:padding="5dp"
                     android:textColor="@{ viewModel.cardNumber.isInvalid ? @color/red : @color/gray_800 }" />
 
                 <com.basistheory.elements.view.CardExpirationDateElement
@@ -42,8 +52,8 @@
                     android:layout_height="wrap_content"
                     android:layout_marginTop="20dp"
                     android:background="@drawable/rounded_edit_text"
-                    android:padding="5dp"
                     android:hint="@string/expiration_date"
+                    android:padding="5dp"
                     android:textColor="@{ viewModel.cardExpiration.isInvalid ? @color/red : @color/gray_800 }" />
 
                 <com.basistheory.elements.view.CardVerificationCodeElement
@@ -52,8 +62,8 @@
                     android:layout_height="wrap_content"
                     android:layout_marginTop="20dp"
                     android:background="@drawable/rounded_edit_text"
-                    android:padding="5dp"
                     android:hint="@string/cvc"
+                    android:padding="5dp"
                     android:textColor="@{ viewModel.cardCvc.isInvalid ? @color/red : @color/gray_800 }" />
 
                 <LinearLayout
