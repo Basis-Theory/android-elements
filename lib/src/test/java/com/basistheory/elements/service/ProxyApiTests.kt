@@ -76,9 +76,9 @@ class ProxyApiTests {
     fun setup() {
         proxyApi = ProxyApi(
             dispatcher = Dispatchers.IO,
-            apiBaseUrl = "https://api.basistheory.com",
             apiKey = "124",
-            httpClient = mockHttpClient
+            httpClient = mockHttpClient,
+            environment = "production"
         )
         proxyRequest = ProxyRequest()
 
@@ -135,6 +135,43 @@ class ProxyApiTests {
             } else {
                 get { body }.isNull()
             }
+        }
+
+        expectThat(result).isA<ElementValueReference>()
+    }
+
+    @Test
+    fun `should use uat url when environment is test`() {
+        proxyApi = ProxyApi(
+            dispatcher = Dispatchers.IO,
+            apiKey = "124",
+            httpClient = mockHttpClient,
+            environment = "test"
+        )
+
+        val queryParamValue = UUID.randomUUID().toString()
+        proxyRequest = proxyRequest.apply {
+            path = "/payment"
+            headers = mapOf(
+                "BT-PROXY-URL" to "https://echo.basistheory.com/post",
+                "Content-Type" to "text/plain"
+            )
+            queryParams = mapOf("param" to queryParamValue)
+            body = "Hello World"
+        }
+
+        val requestSlot = setupMocks("\"Hello World\"")
+
+        val result = runBlocking {
+            proxyApi.post(proxyRequest)
+        }
+
+        verify(exactly = 1) { mockHttpClient.newCall(any()) }
+        verify(exactly = 1) { mockCall.execute() }
+
+        expectThat(requestSlot.captured) {
+            get { url.toString() }
+                .isEqualTo("https://api.btsandbox.com/proxy/payment?param=${queryParamValue}")
         }
 
         expectThat(result).isA<ElementValueReference>()
