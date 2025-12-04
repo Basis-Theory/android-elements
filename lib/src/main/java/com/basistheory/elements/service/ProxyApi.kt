@@ -1,6 +1,8 @@
 package com.basistheory.elements.service
 
+import com.basistheory.core.Environment
 import com.basistheory.elements.model.ElementValueReference
+import com.basistheory.elements.util.getApiUrl
 import com.basistheory.elements.util.getEncodedDeviceInfo
 import com.basistheory.elements.util.isPrimitiveType
 import com.basistheory.elements.util.replaceElementRefs
@@ -53,7 +55,7 @@ class ProxyApi(
     val apiBaseUrl: String = "https://api.basistheory.com",
     val apiKey: String,
     val httpClient: OkHttpClient = OkHttpClient(),
-    val environment: String = "production"
+    val environment: Environment = Environment.DEFAULT
 ) : Proxy {
 
     override suspend fun get(proxyRequest: ProxyRequest, apiKeyOverride: String?): Any? =
@@ -93,8 +95,7 @@ class ProxyApi(
             }
         }
 
-        val finalApiBaseUrl =
-            if (environment.lowercase() == "test") "https://api.btsandbox.com" else apiBaseUrl
+        val finalApiBaseUrl = environment.getApiUrl()
         val urlBuilder = (finalApiBaseUrl + "/proxy" + (proxyRequest.path.orEmpty()))
             .toHttpUrlOrNull()?.newBuilder()
             ?: throw IllegalArgumentException("Invalid URL")

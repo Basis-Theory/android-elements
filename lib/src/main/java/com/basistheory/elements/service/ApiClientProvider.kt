@@ -12,7 +12,7 @@ import kotlinx.coroutines.Dispatchers
 internal class ApiClientProvider(
     private val apiUrl: String = "https://api.basistheory.com",
     private val defaultApiKey: String? = null,
-    private val environment: String? = "production"
+    private val environment: Environment? = Environment.DEFAULT
 ) {
     fun getTokensApi(apiKeyOverride: String? = null): TokensClient =
         getApiClient(apiKeyOverride).tokens()
@@ -38,14 +38,8 @@ internal class ApiClientProvider(
 
         return BasisTheoryApiClient.builder()
             .apiKey(apiKey)
-            .environment(getJavaSdkEnvironment(environment))
+            .environment(environment)
             .httpClient(createHttpClientWithDeviceInfo())
             .build()
-    }
-
-    private fun getJavaSdkEnvironment(environment: String?): Environment {
-        if (environment?.lowercase() == "test") Environment.TEST
-
-        return Environment.PRODUCTION
     }
 }

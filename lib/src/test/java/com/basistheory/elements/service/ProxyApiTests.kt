@@ -1,5 +1,6 @@
 package com.basistheory.elements.service
 
+import com.basistheory.core.Environment
 import com.basistheory.elements.model.ElementValueReference
 import com.basistheory.elements.util.getEncodedDeviceInfo
 import io.mockk.CapturingSlot
@@ -78,7 +79,7 @@ class ProxyApiTests {
             dispatcher = Dispatchers.IO,
             apiKey = "124",
             httpClient = mockHttpClient,
-            environment = "production"
+            environment = Environment.US
         )
         proxyRequest = ProxyRequest()
 
@@ -146,7 +147,7 @@ class ProxyApiTests {
             dispatcher = Dispatchers.IO,
             apiKey = "124",
             httpClient = mockHttpClient,
-            environment = "test"
+            environment = Environment.TEST
         )
 
         val queryParamValue = UUID.randomUUID().toString()
@@ -171,7 +172,7 @@ class ProxyApiTests {
 
         expectThat(requestSlot.captured) {
             get { url.toString() }
-                .isEqualTo("https://api.btsandbox.com/proxy/payment?param=${queryParamValue}")
+                .isEqualTo("https://api.test.basistheory.com/proxy/payment?param=${queryParamValue}")
         }
 
         expectThat(result).isA<ElementValueReference>()
