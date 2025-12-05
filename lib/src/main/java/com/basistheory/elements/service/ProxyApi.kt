@@ -1,7 +1,8 @@
 package com.basistheory.elements.service
 
+import com.basistheory.core.Environment
 import com.basistheory.elements.model.ElementValueReference
-import com.basistheory.elements.model.exceptions.ApiException
+import com.basistheory.elements.util.getApiUrl
 import com.basistheory.elements.util.getEncodedDeviceInfo
 import com.basistheory.elements.util.isPrimitiveType
 import com.basistheory.elements.util.replaceElementRefs
@@ -18,7 +19,6 @@ import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.RequestBody.Companion.toRequestBody
-
 
 interface Proxy {
 
@@ -54,7 +54,8 @@ class ProxyApi(
     val dispatcher: CoroutineDispatcher = Dispatchers.IO,
     val apiBaseUrl: String = "https://api.basistheory.com",
     val apiKey: String,
-    val httpClient: OkHttpClient = OkHttpClient()
+    val httpClient: OkHttpClient = OkHttpClient(),
+    val environment: Environment = Environment.DEFAULT
 ) : Proxy {
 
     override suspend fun get(proxyRequest: ProxyRequest, apiKeyOverride: String?): Any? =
@@ -94,7 +95,8 @@ class ProxyApi(
             }
         }
 
-        val urlBuilder = (apiBaseUrl + "/proxy" + (proxyRequest.path.orEmpty()))
+        val finalApiBaseUrl = if (apiBaseUrl !== "https://api.basistheory.com") apiBaseUrl else environment.getApiUrl()
+        val urlBuilder = (finalApiBaseUrl + "/proxy" + (proxyRequest.path.orEmpty()))
             .toHttpUrlOrNull()?.newBuilder()
             ?: throw IllegalArgumentException("Invalid URL")
         proxyRequest.queryParams?.toPairs()?.forEach { (key, value) ->
@@ -112,6 +114,7 @@ class ProxyApi(
         val requestBody = when {
             method.equals("GET", ignoreCase = true) ||
                     method.equals("DELETE", ignoreCase = true) -> null
+
             isTextPlain -> processedBody?.toString().orEmpty()
                 .toRequestBody("text/plain; charset=utf-8".toMediaTypeOrNull())
 

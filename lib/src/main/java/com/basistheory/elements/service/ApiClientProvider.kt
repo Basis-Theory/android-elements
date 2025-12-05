@@ -1,6 +1,7 @@
 package com.basistheory.elements.service
 
 import com.basistheory.BasisTheoryApiClient
+import com.basistheory.core.Environment
 import com.basistheory.resources.enrichments.EnrichmentsClient
 import com.basistheory.resources.sessions.SessionsClient
 import com.basistheory.resources.tokenintents.TokenIntentsClient
@@ -10,7 +11,8 @@ import kotlinx.coroutines.Dispatchers
 
 internal class ApiClientProvider(
     private val apiUrl: String = "https://api.basistheory.com",
-    private val defaultApiKey: String? = null
+    private val defaultApiKey: String? = null,
+    private val environment: Environment? = Environment.DEFAULT
 ) {
     fun getTokensApi(apiKeyOverride: String? = null): TokensClient =
         getApiClient(apiKeyOverride).tokens()
@@ -34,10 +36,15 @@ internal class ApiClientProvider(
         val apiKey = apiKeyOverride ?: defaultApiKey
         requireNotNull(apiKey)
 
-        return BasisTheoryApiClient.builder()
+        val apiClient = BasisTheoryApiClient.builder()
             .apiKey(apiKey)
-            .url(apiUrl)
-            .httpClient(createHttpClientWithDeviceInfo())
-            .build()
+            .environment(environment)
+            .httpClient(createHttpClientWithDeviceInfo());
+
+        if (apiUrl != "https://api.basistheory.com" && environment === Environment.DEFAULT) {
+            apiClient.url(apiUrl)
+        }
+
+        return apiClient.build()
     }
 }
