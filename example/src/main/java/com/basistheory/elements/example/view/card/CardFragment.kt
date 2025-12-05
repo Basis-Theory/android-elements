@@ -1,7 +1,6 @@
 package com.basistheory.elements.example.view.card
 
 import android.os.Bundle
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -11,7 +10,6 @@ import com.basistheory.elements.constants.CoBadgedSupport
 import com.basistheory.elements.example.databinding.FragmentCardBinding
 import com.basistheory.elements.example.util.tokenExpirationTimestamp
 import com.basistheory.elements.example.viewmodel.CardFragmentViewModel
-import com.basistheory.elements.service.BasisTheoryElements
 import com.basistheory.elements.view.CardBrandSelectorOptions
 
 class CardFragment : Fragment() {

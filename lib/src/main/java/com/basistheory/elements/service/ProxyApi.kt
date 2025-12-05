@@ -95,7 +95,7 @@ class ProxyApi(
             }
         }
 
-        val finalApiBaseUrl = environment.getApiUrl()
+        val finalApiBaseUrl = if (apiBaseUrl !== "https://api.basistheory.com") apiBaseUrl else environment.getApiUrl()
         val urlBuilder = (finalApiBaseUrl + "/proxy" + (proxyRequest.path.orEmpty()))
             .toHttpUrlOrNull()?.newBuilder()
             ?: throw IllegalArgumentException("Invalid URL")
