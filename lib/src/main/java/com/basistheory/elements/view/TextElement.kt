@@ -151,6 +151,9 @@ open class TextElement @JvmOverloads constructor(
     fun setText(value: String?) =
         _editText.setText(value)
 
+    fun clear() =
+        _editText.setText("")
+
     fun setValueRef(element: TextElement) {
         element.addChangeEventListener {
             setText(element.getText())

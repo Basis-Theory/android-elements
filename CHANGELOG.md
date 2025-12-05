@@ -1,3 +1,16 @@
+## [2.3.0](https://github.com/Basis-Theory/android-elements/compare/2.2.0...2.3.0) (2025-11-26)
+
+
+### ⚠ BREAKING CHANGES
+
+* Add ability to do BIN lookups for cards for Android. (#25)
+
+### Features
+
+* Add ability to do BIN lookups for cards for Android. ([#25](https://github.com/Basis-Theory/android-elements/issues/25)) ([cbc2fe7](https://github.com/Basis-Theory/android-elements/commit/cbc2fe745896f847ed1a6acbbe49f80f31872990))
+* Add cobadge support to android elements ([#26](https://github.com/Basis-Theory/android-elements/issues/26)) ([3fc5f25](https://github.com/Basis-Theory/android-elements/commit/3fc5f255b6082c6db08ac4f2f92574cea651aa62))
+
+
 ## [2.2.0](https://github.com/Basis-Theory/android-elements/compare/2.1.0...2.2.0) (2025-11-13)
 
 

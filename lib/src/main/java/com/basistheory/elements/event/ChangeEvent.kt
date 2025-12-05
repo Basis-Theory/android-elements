@@ -7,7 +7,8 @@ data class ChangeEvent(
     val isEmpty: Boolean,
     val isValid: Boolean,
     val isMaskSatisfied: Boolean,
-    val details: List<EventDetails> = mutableListOf()
+    val details: List<EventDetails> = mutableListOf(),
+    val selectedNetwork: String? = null
 )
 
 data class EventDetails(
