@@ -36,10 +36,15 @@ internal class ApiClientProvider(
         val apiKey = apiKeyOverride ?: defaultApiKey
         requireNotNull(apiKey)
 
-        return BasisTheoryApiClient.builder()
+        val apiClient = BasisTheoryApiClient.builder()
             .apiKey(apiKey)
             .environment(environment)
-            .httpClient(createHttpClientWithDeviceInfo())
-            .build()
+            .httpClient(createHttpClientWithDeviceInfo());
+
+        if (apiUrl != "https://api.basistheory.com" && environment === Environment.DEFAULT) {
+            apiClient.url(apiUrl)
+        }
+
+        return apiClient.build()
     }
 }
