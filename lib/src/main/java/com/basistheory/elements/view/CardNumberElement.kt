@@ -23,6 +23,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
+import kotlin.coroutines.cancellation.CancellationException
 
 class CardNumberElement @JvmOverloads constructor(
     context: Context,
@@ -130,6 +131,8 @@ class CardNumberElement @JvmOverloads constructor(
                     BinDetailsCache.put(bin, binDetails)
                     updateBinDetails(binDetails)
                 }
+            } catch (e: CancellationException) {
+                Log.i("CardNumberElement", "Fetch BIN details job cancelled")
             } catch (e: Exception) {
                 Log.e("CardNumberElement", "Error fetching BIN details", e)
             }
