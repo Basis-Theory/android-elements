@@ -172,7 +172,7 @@ class CollectCardTests {
             .perform(waitUntilVisible(10000L))
 
         onView(withId(R.id.card_brand_selector)).perform(click())
-        onView(withText("CARTES BANCAIRES")).perform(click())
+        onView(withText("CARTES_BANCAIRES")).perform(click())
 
         onView(withId(R.id.tokenize_button)).check(matches(isEnabled()))
     }
