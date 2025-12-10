@@ -1,7 +1,7 @@
 package com.basistheory.elements.constants
 
 enum class CoBadgedSupport(val value: String) {
-    CARTES_BANCAIRES("cartes-bancaires");
+    CARTES_BANCAIRES("cartes_bancaires");
 
     companion object {
         fun fromString(value: String): CoBadgedSupport? {
