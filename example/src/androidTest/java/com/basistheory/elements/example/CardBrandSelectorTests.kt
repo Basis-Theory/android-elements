@@ -55,7 +55,7 @@ class CardBrandSelectorTests {
         cardBrandSelector.setConfig(options)
 
         val intent = Intent(CardBrandSelector.ACTION_BRAND_OPTIONS_UPDATED).apply {
-            putStringArrayListExtra(CardBrandSelector.EXTRA_BRAND_OPTIONS, arrayListOf("VISA"))
+            putStringArrayListExtra(CardBrandSelector.EXTRA_BRAND_OPTIONS, arrayListOf("visa"))
         }
         LocalBroadcastManager.getInstance(ApplicationProvider.getApplicationContext()).sendBroadcast(intent)
 
@@ -68,7 +68,7 @@ class CardBrandSelectorTests {
     @Test
     fun testBrandSelectorVisibleWithMultipleSupportedBrands() {
         val intent = Intent(CardBrandSelector.ACTION_BRAND_OPTIONS_UPDATED).apply {
-            putStringArrayListExtra(CardBrandSelector.EXTRA_BRAND_OPTIONS, arrayListOf("VISA", "CARTES BANCAIRES"))
+            putStringArrayListExtra(CardBrandSelector.EXTRA_BRAND_OPTIONS, arrayListOf("visa", "cartes-bancaires"))
         }
         LocalBroadcastManager.getInstance(ApplicationProvider.getApplicationContext()).sendBroadcast(intent)
 
@@ -76,14 +76,14 @@ class CardBrandSelectorTests {
 
         assertEquals(View.VISIBLE, cardBrandSelector.visibility)
         assertEquals(2, cardBrandSelector.getAvailableCardBrands().size)
-        assertTrue(cardBrandSelector.getAvailableCardBrands().contains("VISA"))
-        assertTrue(cardBrandSelector.getAvailableCardBrands().contains("CARTES BANCAIRES"))
+        assertTrue(cardBrandSelector.getAvailableCardBrands().contains("visa"))
+        assertTrue(cardBrandSelector.getAvailableCardBrands().contains("cartes-bancaires"))
     }
 
     @Test
     fun testBrandSelectorHiddenWithSingleBrand() {
         val intent = Intent(CardBrandSelector.ACTION_BRAND_OPTIONS_UPDATED).apply {
-            putStringArrayListExtra(CardBrandSelector.EXTRA_BRAND_OPTIONS, arrayListOf("VISA"))
+            putStringArrayListExtra(CardBrandSelector.EXTRA_BRAND_OPTIONS, arrayListOf("visa"))
         }
         LocalBroadcastManager.getInstance(ApplicationProvider.getApplicationContext()).sendBroadcast(intent)
 
@@ -96,27 +96,27 @@ class CardBrandSelectorTests {
     @Test
     fun testBrandSelectionUpdatesSelectedBrand() {
         val intent = Intent(CardBrandSelector.ACTION_BRAND_OPTIONS_UPDATED).apply {
-            putStringArrayListExtra(CardBrandSelector.EXTRA_BRAND_OPTIONS, arrayListOf("VISA", "CARTES BANCAIRES"))
+            putStringArrayListExtra(CardBrandSelector.EXTRA_BRAND_OPTIONS, arrayListOf("visa", "cartes-bancaires"))
         }
         LocalBroadcastManager.getInstance(ApplicationProvider.getApplicationContext()).sendBroadcast(intent)
 
         InstrumentationRegistry.getInstrumentation().waitForIdleSync()
 
         assertEquals(2, cardBrandSelector.getAvailableCardBrands().size)
-        assertTrue(cardBrandSelector.getAvailableCardBrands().contains("VISA"))
-        assertTrue(cardBrandSelector.getAvailableCardBrands().contains("CARTES BANCAIRES"))
+        assertTrue(cardBrandSelector.getAvailableCardBrands().contains("visa"))
+        assertTrue(cardBrandSelector.getAvailableCardBrands().contains("cartes-bancaires"))
 
-        cardBrandSelector.setSelectedBrand("CARTES BANCAIRES")
+        cardBrandSelector.setSelectedBrand("cartes-bancaires")
 
         InstrumentationRegistry.getInstrumentation().waitForIdleSync()
 
-        assertEquals("CARTES BANCAIRES", cardBrandSelector.getSelectedCardBrand())
+        assertEquals("cartes-bancaires", cardBrandSelector.getSelectedCardBrand())
     }
 
     @Test
     fun testBrandSelectionSendsBroadcast() {
         val intent = Intent(CardBrandSelector.ACTION_BRAND_OPTIONS_UPDATED).apply {
-            putStringArrayListExtra(CardBrandSelector.EXTRA_BRAND_OPTIONS, arrayListOf("VISA", "CARTES BANCAIRES"))
+            putStringArrayListExtra(CardBrandSelector.EXTRA_BRAND_OPTIONS, arrayListOf("visa", "cartes-bancaires"))
         }
         LocalBroadcastManager.getInstance(ApplicationProvider.getApplicationContext()).sendBroadcast(intent)
 
@@ -132,11 +132,11 @@ class CardBrandSelectorTests {
         LocalBroadcastManager.getInstance(ApplicationProvider.getApplicationContext())
             .registerReceiver(receiver, android.content.IntentFilter(CardBrandSelector.ACTION_BRAND_SELECTED))
 
-        cardBrandSelector.setSelectedBrand("CARTES BANCAIRES")
+        cardBrandSelector.setSelectedBrand("cartes-bancaires")
 
         InstrumentationRegistry.getInstrumentation().waitForIdleSync()
 
-        assertEquals("CARTES BANCAIRES", receivedBrand)
+        assertEquals("cartes-bancaires", receivedBrand)
 
         LocalBroadcastManager.getInstance(ApplicationProvider.getApplicationContext()).unregisterReceiver(receiver)
     }
@@ -144,7 +144,7 @@ class CardBrandSelectorTests {
     @Test
     fun testBrandSelectionTriggersCallback() {
         val intent = Intent(CardBrandSelector.ACTION_BRAND_OPTIONS_UPDATED).apply {
-            putStringArrayListExtra(CardBrandSelector.EXTRA_BRAND_OPTIONS, arrayListOf("VISA", "CARTES BANCAIRES"))
+            putStringArrayListExtra(CardBrandSelector.EXTRA_BRAND_OPTIONS, arrayListOf("visa", "cartes-bancaires"))
         }
         LocalBroadcastManager.getInstance(ApplicationProvider.getApplicationContext()).sendBroadcast(intent)
 
@@ -155,17 +155,17 @@ class CardBrandSelectorTests {
             callbackBrand = selectedBrand
         }
 
-        cardBrandSelector.setSelectedBrand("CARTES BANCAIRES")
+        cardBrandSelector.setSelectedBrand("cartes-bancaires")
 
         InstrumentationRegistry.getInstrumentation().waitForIdleSync()
 
-        assertEquals("CARTES BANCAIRES", callbackBrand)
+        assertEquals("cartes-bancaires", callbackBrand)
     }
 
     @Test
     fun testBrandSelectorClearedWhenBinInfoCleared() {
         val intent1 = Intent(CardBrandSelector.ACTION_BRAND_OPTIONS_UPDATED).apply {
-            putStringArrayListExtra(CardBrandSelector.EXTRA_BRAND_OPTIONS, arrayListOf("VISA", "CARTES BANCAIRES"))
+            putStringArrayListExtra(CardBrandSelector.EXTRA_BRAND_OPTIONS, arrayListOf("visa", "cartes-bancaires"))
         }
         LocalBroadcastManager.getInstance(ApplicationProvider.getApplicationContext()).sendBroadcast(intent1)
 

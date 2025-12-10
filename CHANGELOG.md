@@ -1,3 +1,11 @@
+## [2.4.0](https://github.com/Basis-Theory/android-elements/compare/2.3.0...2.4.0) (2025-12-10)
+
+
+### Features
+
+* filter bin info based on user input ([#31](https://github.com/Basis-Theory/android-elements/issues/31)) ([17d98a9](https://github.com/Basis-Theory/android-elements/commit/17d98a9c2bcff6dfd077c407595b6d3685923997))
+
+
 ## [2.3.0](https://github.com/Basis-Theory/android-elements/compare/2.2.0...2.3.0) (2025-11-26)
 
 

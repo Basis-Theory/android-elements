@@ -114,7 +114,7 @@ class CollectCardTests {
 
     @Test
     fun cobadgeWorkflowShowsMultipleBrands() {
-        onView(withId(R.id.card_number)).perform(scrollTo(), typeText("4020971234567899"))
+        onView(withId(R.id.card_number)).perform(scrollTo(), typeText("4020978034567896"))
 
         onView(withId(R.id.card_brand_selector))
             .perform(waitUntilVisible(10000L))
@@ -123,7 +123,7 @@ class CollectCardTests {
 
     @Test
     fun cobadgeWorkflowClearsWhenCardNumberCleared() {
-        onView(withId(R.id.card_number)).perform(scrollTo(), typeText("4020971234567899"))
+        onView(withId(R.id.card_number)).perform(scrollTo(), typeText("4020978034567896"))
 
         onView(withId(R.id.card_brand_selector))
             .perform(waitUntilVisible(10000L))
@@ -142,7 +142,7 @@ class CollectCardTests {
         val expYear = (LocalDate.now().year + 1).toString()
         val cvc = "123"
 
-        onView(withId(R.id.card_number)).perform(scrollTo(), typeText("4020971234567899"))
+        onView(withId(R.id.card_number)).perform(scrollTo(), typeText("4020978034567896"))
         onView(withId(R.id.expiration_date)).perform(
             scrollTo(),
             typeText("$expMonth/${expYear.takeLast(2)}")
@@ -161,7 +161,7 @@ class CollectCardTests {
         val expYear = (LocalDate.now().year + 1).toString()
         val cvc = "123"
 
-        onView(withId(R.id.card_number)).perform(scrollTo(), typeText("4020971234567899"))
+        onView(withId(R.id.card_number)).perform(scrollTo(), typeText("4020978034567896"))
         onView(withId(R.id.expiration_date)).perform(
             scrollTo(),
             typeText("$expMonth/${expYear.takeLast(2)}")
@@ -175,5 +175,21 @@ class CollectCardTests {
         onView(withText("CARTES BANCAIRES")).perform(click())
 
         onView(withId(R.id.tokenize_button)).check(matches(isEnabled()))
+    }
+
+    @Test
+    fun cobadgeWorkflowFiltersBinInfo() {
+        onView(withId(R.id.card_number)).perform(scrollTo(), typeText("4020978"))
+
+        onView(withId(R.id.card_brand_selector))
+            .perform(waitUntilVisible(10000L))
+            .check(matches(isDisplayed()))
+
+        onView(withId(R.id.card_number)).perform(scrollTo(), clearTextElement())
+        onView(withId(R.id.card_number)).perform(scrollTo(), typeText("4020977"))
+
+        onView(withId(R.id.card_brand_selector))
+            .perform(waitUntilGone(5000L))
+            .check(matches(not(isDisplayed())))
     }
 }
