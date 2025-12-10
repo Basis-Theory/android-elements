@@ -36,6 +36,10 @@ class CardBrandSelector @JvmOverloads constructor(
     private var brandSelectionCallback: ((String) -> Unit)? = null
     private var defaultTitle: String? = null
 
+    private fun getBrandDisplayName(brandKey: String): String {
+        return brandKey.uppercase().replace("-", " ")
+    }
+
     private val brandOptionsReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context?, intent: Intent?) {
             when (intent?.action) {
@@ -97,7 +101,7 @@ class CardBrandSelector @JvmOverloads constructor(
         }
         
         selectedBrand = brandName
-        text = brandName
+        text = getBrandDisplayName(brandName)
         
         // Notify listeners
         sendBrandSelectionEvent(brandName)
@@ -159,7 +163,7 @@ class CardBrandSelector @JvmOverloads constructor(
         val popup = PopupMenu(context, this)
         
         availableBrands.forEachIndexed { index, brand ->
-            popup.menu.add(0, index, index, brand)
+            popup.menu.add(0, index, index, getBrandDisplayName(brand))
         }
         
         popup.setOnMenuItemClickListener { menuItem ->
