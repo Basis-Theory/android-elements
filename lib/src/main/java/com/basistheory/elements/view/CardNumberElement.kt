@@ -15,18 +15,16 @@ import com.basistheory.elements.model.BinDetails
 import com.basistheory.elements.model.BinRange
 import com.basistheory.elements.model.CardMetadata
 import com.basistheory.elements.model.InputType
-import com.basistheory.elements.service.ApiClientProvider
 import com.basistheory.elements.service.CardBrandEnricher
 import com.basistheory.elements.util.BinDetailsCache
 import com.basistheory.elements.view.mask.ElementMask
 import com.basistheory.elements.view.transform.RegexReplaceElementTransform
 import com.basistheory.elements.view.validation.LuhnValidator
-import com.basistheory.resources.enrichments.requests.EnrichmentsGetCardDetailsRequest
-import com.basistheory.types.CardDetailsResponse
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
+import kotlin.coroutines.cancellation.CancellationException
 
 class CardNumberElement @JvmOverloads constructor(
     context: Context,
@@ -141,6 +139,8 @@ class CardNumberElement @JvmOverloads constructor(
                     BinDetailsCache.put(bin, binDetails)
                     updateBinDetails(binDetails)
                 }
+            } catch (e: CancellationException) {
+                Log.i("CardNumberElement", "Fetch BIN details job cancelled")
             } catch (e: Exception) {
                 Log.e("CardNumberElement", "Error fetching BIN details", e)
             }
