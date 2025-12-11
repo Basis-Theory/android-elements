@@ -1,3 +1,11 @@
+## [2.5.0](https://github.com/Basis-Theory/android-elements/compare/2.4.0...2.5.0) (2025-12-11)
+
+
+### Features
+
+* add environment option ([#27](https://github.com/Basis-Theory/android-elements/issues/27)) ([88cb091](https://github.com/Basis-Theory/android-elements/commit/88cb09126e56d40fbeb325c9660f742ce0bc901a))
+
+
 ## [2.4.0](https://github.com/Basis-Theory/android-elements/compare/2.3.0...2.4.0) (2025-12-10)
 
 
