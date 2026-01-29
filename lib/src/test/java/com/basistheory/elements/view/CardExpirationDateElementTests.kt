@@ -10,6 +10,8 @@ import org.robolectric.Robolectric
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.annotation.Config
 import strikt.api.expectThat
+import strikt.assertions.hasSize
+import strikt.assertions.isEmpty
 import strikt.assertions.isEqualTo
 import strikt.assertions.isFalse
 import strikt.assertions.isTrue
@@ -190,5 +192,31 @@ class CardExpirationDateElementTests {
 
         cardExpirationDateElement.setText("aa")
         expectThat(cardExpirationDateElement.getTransformedText()).isEqualTo("")
+    }
+
+    @Test
+    fun `CopyEvent listener receives events when copy is triggered`() {
+        cardExpirationDateElement.enableCopy = true
+        cardExpirationDateElement.setText("12/99")
+
+        val copyEvents = mutableListOf<com.basistheory.elements.event.CopyEvent>()
+
+        cardExpirationDateElement.addCopyEventListener { copyEvents.add(it) }
+        cardExpirationDateElement.performCopy()
+
+        expectThat(copyEvents).hasSize(1)
+    }
+
+    @Test
+    fun `CopyEvent is not raised when enableCopy is false`() {
+        cardExpirationDateElement.enableCopy = false
+        cardExpirationDateElement.setText("12/99")
+
+        val copyEvents = mutableListOf<com.basistheory.elements.event.CopyEvent>()
+
+        cardExpirationDateElement.addCopyEventListener { copyEvents.add(it) }
+        cardExpirationDateElement.performCopy()
+
+        expectThat(copyEvents).isEmpty()
     }
 }

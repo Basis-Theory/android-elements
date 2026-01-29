@@ -18,8 +18,6 @@ import android.util.AttributeSet
 import android.util.TypedValue
 import android.view.Gravity
 import android.view.MotionEvent
-import android.view.View.OnFocusChangeListener
-import android.view.View.OnTouchListener
 import android.view.ViewGroup
 import android.view.inputmethod.EditorInfo
 import android.view.inputmethod.InputConnection
@@ -33,6 +31,7 @@ import com.basistheory.elements.R
 import com.basistheory.elements.constants.ElementValueType
 import com.basistheory.elements.event.BlurEvent
 import com.basistheory.elements.event.ChangeEvent
+import com.basistheory.elements.event.CopyEvent
 import com.basistheory.elements.event.ElementEventListeners
 import com.basistheory.elements.event.FocusEvent
 import com.basistheory.elements.model.ElementValueReference
@@ -311,6 +310,10 @@ open class TextElement @JvmOverloads constructor(
         _eventListeners.blur.add(listener)
     }
 
+    fun addCopyEventListener(listener: (CopyEvent) -> Unit) {
+        _eventListeners.copy.add(listener)
+    }
+
     override fun onCreateInputConnection(outAttrs: EditorInfo): InputConnection? {
         return _editText.onCreateInputConnection(outAttrs)
     }
@@ -468,6 +471,9 @@ open class TextElement @JvmOverloads constructor(
         val clip: ClipData = ClipData.newPlainText("Value", getText())
         clipboard.setPrimaryClip(clip)
 
+        // dispatch copy event
+        _eventListeners.copy.iterator().forEach { it(CopyEvent()) }
+
         // update icon
         _editText.setCompoundDrawablesWithIntrinsicBounds(null, null, checkIcon, null)
 
@@ -481,5 +487,10 @@ open class TextElement @JvmOverloads constructor(
 
     private fun removeCopy() {
         _editText.setCompoundDrawablesWithIntrinsicBounds(null, null, null, null)
+    }
+
+    fun performCopy() {
+        if (!_enableCopy) return
+        copyTextToClipboard()
     }
 }

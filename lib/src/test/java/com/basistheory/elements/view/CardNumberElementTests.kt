@@ -340,4 +340,30 @@ class CardNumberElementTests {
 
         expectThat(cardNumberElement.binDetails).isNull()
     }
+
+    @Test
+    fun `CopyEvent listener receives events when copy is triggered`() {
+        cardNumberElement.enableCopy = true
+        cardNumberElement.setText("4242 4242 4242 4242")
+
+        val copyEvents = mutableListOf<com.basistheory.elements.event.CopyEvent>()
+
+        cardNumberElement.addCopyEventListener { copyEvents.add(it) }
+        cardNumberElement.performCopy()
+
+        expectThat(copyEvents).hasSize(1)
+    }
+
+    @Test
+    fun `CopyEvent is not raised when enableCopy is false`() {
+        cardNumberElement.enableCopy = false
+        cardNumberElement.setText("4242 4242 4242 4242")
+
+        val copyEvents = mutableListOf<com.basistheory.elements.event.CopyEvent>()
+
+        cardNumberElement.addCopyEventListener { copyEvents.add(it) }
+        cardNumberElement.performCopy()
+
+        expectThat(copyEvents).isEmpty()
+    }
 }
