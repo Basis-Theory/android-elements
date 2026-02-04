@@ -1,3 +1,11 @@
+## [2.6.0](https://github.com/Basis-Theory/android-elements/compare/2.5.0...2.6.0) (2026-02-04)
+
+
+### Features
+
+* add new CopyEvent and listeners when copying to clipboard ([#32](https://github.com/Basis-Theory/android-elements/issues/32)) ([1efcb72](https://github.com/Basis-Theory/android-elements/commit/1efcb72a5301f0d1c87521bc83a15bb73502934e))
+
+
 ## [2.5.0](https://github.com/Basis-Theory/android-elements/compare/2.4.0...2.5.0) (2025-12-11)
 
 
