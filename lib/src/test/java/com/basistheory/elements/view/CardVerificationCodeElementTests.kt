@@ -166,4 +166,31 @@ class CardVerificationCodeElementTests {
         expectThat(cvcElement.getText()).isEqualTo("123") // value does not change
         expectThat(changeEvents).single() // no new change events were published
     }
+
+    @Test
+    fun `CopyEvent listener receives events when copy is triggered`() {
+        cvcElement.enableCopy = true
+        cvcElement.setText("123")
+
+        val copyEvents = mutableListOf<com.basistheory.elements.event.CopyEvent>()
+
+        cvcElement.addCopyEventListener { copyEvents.add(it) }
+        cvcElement.performCopy()
+
+        expectThat(copyEvents).hasSize(1)
+    }
+
+
+    @Test
+    fun `CopyEvent is not raised when enableCopy is false`() {
+        cvcElement.enableCopy = false
+        cvcElement.setText("123")
+
+        val copyEvents = mutableListOf<com.basistheory.elements.event.CopyEvent>()
+
+        cvcElement.addCopyEventListener { copyEvents.add(it) }
+        cvcElement.performCopy()
+
+        expectThat(copyEvents).isEmpty()
+    }
 }

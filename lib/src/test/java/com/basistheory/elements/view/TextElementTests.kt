@@ -2,6 +2,7 @@ package com.basistheory.elements.view
 
 import android.app.Activity
 import com.basistheory.elements.event.ChangeEvent
+import com.basistheory.elements.event.CopyEvent
 import com.basistheory.elements.model.ElementValueReference
 import com.basistheory.elements.view.mask.ElementMask
 import com.basistheory.elements.view.transform.RegexReplaceElementTransform
@@ -197,5 +198,31 @@ class TextElementTests {
         textElement.setValueRef(valueReference)
 
         expectThat(textElement.getText()).isEqualTo("4242424242424242")
+    }
+
+    @Test
+    fun `CopyEvent listener receives events when copy is triggered`() {
+        textElement.enableCopy = true
+        textElement.setText("test value")
+
+        val copyEvents = mutableListOf<CopyEvent>()
+
+        textElement.addCopyEventListener { copyEvents.add(it) }
+        textElement.performCopy()
+
+        expectThat(copyEvents).hasSize(1)
+    }
+
+    @Test
+    fun `CopyEvent is not raised when enableCopy is false`() {
+        textElement.enableCopy = false
+        textElement.setText("test value")
+
+        val copyEvents = mutableListOf<CopyEvent>()
+
+        textElement.addCopyEventListener { copyEvents.add(it) }
+        textElement.performCopy()
+
+        expectThat(copyEvents).isEmpty()
     }
 }
