@@ -1,3 +1,11 @@
+## [2.7.0](https://github.com/Basis-Theory/android-elements/compare/2.6.0...2.7.0) (2026-02-13)
+
+
+### Features
+
+* implement token update ([#33](https://github.com/Basis-Theory/android-elements/issues/33)) ([4629934](https://github.com/Basis-Theory/android-elements/commit/462993458b0bec10d102d895226c4dbaded7da1d))
+
+
 ## [2.6.0](https://github.com/Basis-Theory/android-elements/compare/2.5.0...2.6.0) (2026-02-04)
 
 
