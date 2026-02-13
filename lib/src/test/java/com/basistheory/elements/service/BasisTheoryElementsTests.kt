@@ -5,6 +5,7 @@ import android.view.View
 import com.basistheory.elements.constants.ElementValueType
 import com.basistheory.elements.model.CreateTokenRequest
 import com.basistheory.elements.model.CreateTokenIntentRequest
+import com.basistheory.elements.model.UpdateTokenRequest
 import com.basistheory.elements.model.ElementValueReference
 import com.basistheory.elements.model.EncryptTokenRequest
 import com.basistheory.elements.model.EncryptTokenResponse
@@ -1511,6 +1512,85 @@ class BasisTheoryElementsTests {
             get { get("encrypted") }.isA<String>().isNotEqualTo("")
         }
     }
+
+    @Test
+    fun `updateToken should pass api key override to ApiClientProvider`() = runBlocking {
+        val apiKeyOverride = UUID.randomUUID().toString()
+        val tokenId = UUID.randomUUID().toString()
+
+        every { provider.getTokensApi(any()) } returns tokensApi
+        every { tokensApi.update(any(), any()) } returns fakeToken()
+
+        bt.updateToken(tokenId, UpdateTokenRequest(data = ""), apiKeyOverride)
+
+        verify { provider.getTokensApi(apiKeyOverride) }
+    }
+
+    @Test
+    fun `updateToken should forward top level primitive value without modification`() =
+        runBlocking {
+            every { provider.getTokensApi(any()) } returns tokensApi
+            every { tokensApi.update(any(), any()) } returns fakeToken()
+
+            val tokenId = UUID.randomUUID().toString()
+            val name = faker.name().fullName()
+            val updateTokenRequest = UpdateTokenRequest(data = name)
+            bt.updateToken(tokenId, updateTokenRequest)
+
+            verify { tokensApi.update(tokenId, updateTokenRequest.toJava()) }
+        }
+
+    @Test
+    fun `updateToken should replace Element refs within request object with underlying data values`() =
+        runBlocking {
+            every { provider.getTokensApi(any()) } returns tokensApi
+            every { tokensApi.update(any(), any()) } returns fakeToken()
+
+            val tokenId = UUID.randomUUID().toString()
+            val cvc = faker.random().nextInt(100, 999).toString()
+            cvcElement.setText(cvc)
+
+            val data = object {
+                val cvc = cvcElement
+            }
+            val updateTokenRequest = UpdateTokenRequest(data = data)
+
+            bt.updateToken(tokenId, updateTokenRequest)
+
+            val expectedData = mapOf<String, Any?>(
+                "cvc" to cvc
+            )
+            val expectedUpdateTokenRequest = UpdateTokenRequest(data = expectedData)
+
+            verify { tokensApi.update(tokenId, expectedUpdateTokenRequest.toJava()) }
+        }
+
+    @Test
+    fun `updateToken throws ApiException when an exception occurs`(): Unit =
+        runBlocking {
+            every { provider.getTokensApi(any()) } returns tokensApi
+
+            every { tokensApi.update(any(), any()) } throws com.basistheory.core.BasisTheoryApiApiException(
+                "Api Error",
+                401,
+                ""
+            )
+
+            val tokenId = UUID.randomUUID().toString()
+            val updateTokenRequest = UpdateTokenRequest(data = "")
+
+            expectCatching {
+                bt.updateToken(
+                    tokenId,
+                    updateTokenRequest,
+                    apiKeyOverride = faker.name().firstName()
+                )
+            }
+                .isFailure()
+                .isA<ApiException>().and {
+                    get { code }.isEqualTo(401)
+                }
+        }
 
     private fun createTokenRequest(data: Any): CreateTokenRequest =
         CreateTokenRequest(type = "token", data = data)

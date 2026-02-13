@@ -5,6 +5,7 @@ import com.basistheory.elements.constants.ElementValueType
 import com.basistheory.elements.model.CreateSessionResponse
 import com.basistheory.elements.model.CreateTokenRequest
 import com.basistheory.elements.model.CreateTokenIntentRequest
+import com.basistheory.elements.model.UpdateTokenRequest
 import com.basistheory.elements.model.ElementValueReference
 import com.basistheory.elements.model.EncryptTokenRequest
 import com.basistheory.elements.model.EncryptTokenResponse
@@ -68,6 +69,31 @@ class BasisTheoryElements internal constructor(
                 createTokenRequest.data = data!!
 
                 tokensApi.create(createTokenRequest.toJava()).toAndroid()
+            }
+        } catch (e: com.basistheory.core.BasisTheoryApiApiException) {
+            throw ApiException(e.statusCode(), e.headers(), e.body().toString(), e.message)
+        }
+
+    @JvmOverloads
+    suspend fun updateToken(
+        id: String,
+        updateTokenRequest: UpdateTokenRequest,
+        apiKeyOverride: String? = null
+    ): Token =
+        try {
+            withContext(dispatcher) {
+                val tokensApi = apiClientProvider.getTokensApi(apiKeyOverride)
+                val data =
+                    if (updateTokenRequest.data::class.java.isPrimitiveType()) updateTokenRequest.data
+                    else if (updateTokenRequest.data is TextElement) (updateTokenRequest.data as TextElement).tryGetTextToTokenize()
+                        .toValueType((updateTokenRequest.data as TextElement).getValueType)
+                    else if (updateTokenRequest.data is ElementValueReference) (updateTokenRequest.data as ElementValueReference).getValue()
+                        .toValueType((updateTokenRequest.data as ElementValueReference).getValueType)
+                    else replaceElementRefs(updateTokenRequest.data.toMap())
+
+                updateTokenRequest.data = data!!
+
+                tokensApi.update(id, updateTokenRequest.toJava()).toAndroid()
             }
         } catch (e: com.basistheory.core.BasisTheoryApiApiException) {
             throw ApiException(e.statusCode(), e.headers(), e.body().toString(), e.message)
