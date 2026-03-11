@@ -20,9 +20,9 @@ class TokenIntent(
 )
 
 internal fun com.basistheory.types.CreateTokenIntentResponse.toAndroid(): TokenIntent = TokenIntent(
-    id = this.id.toString(),
+    id = this.id.get(),
     tenantId = this.tenantId.orElse(null)?.let { UUID.fromString(it) } ?: throw IllegalStateException("TokenIntent tenantId is required"),
-    type = this.type.toString(),
+    type = this.type.get(),
     card = this.card.orElse(null),
     bank = this.bank.orElse(null),
     networkToken = this.networkToken.orElse(null),

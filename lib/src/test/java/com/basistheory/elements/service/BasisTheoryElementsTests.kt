@@ -1203,25 +1203,35 @@ class BasisTheoryElementsTests {
 
     @Test
     fun `createSession should call java SDK without api key override`() = runBlocking {
+        val fakeSession = fakeSession()
         every { provider.getSessionsApi(any()) } returns sessionsApi
-        every { sessionsApi.create() } returns fakeSession()
+        every { sessionsApi.create() } returns fakeSession
 
-        bt.createSession()
+        val result = bt.createSession()
 
         verify { provider.getSessionsApi() }
         verify { sessionsApi.create() }
+        expectThat(result) {
+            get { sessionKey }.isEqualTo(fakeSession.sessionKey.get())
+            get { nonce }.isEqualTo(fakeSession.nonce.get())
+        }
     }
 
     @Test
     fun `createSession should call java SDK with api key override`() = runBlocking {
         val apiKeyOverride = UUID.randomUUID().toString()
+        val fakeSession = fakeSession()
         every { provider.getSessionsApi(any()) } returns sessionsApi
-        every { sessionsApi.create() } returns fakeSession()
+        every { sessionsApi.create() } returns fakeSession
 
-        bt.createSession(apiKeyOverride)
+        val result = bt.createSession(apiKeyOverride)
 
         verify { provider.getSessionsApi(apiKeyOverride) }
         verify { sessionsApi.create() }
+        expectThat(result) {
+            get { sessionKey }.isEqualTo(fakeSession.sessionKey.get())
+            get { nonce }.isEqualTo(fakeSession.nonce.get())
+        }
     }
 
     @Test
@@ -1622,6 +1632,7 @@ class BasisTheoryElementsTests {
 
     private fun fakeToken(): com.basistheory.types.Token =
         com.basistheory.types.Token.builder()
+            .id(UUID.randomUUID().toString())
             .tenantId(UUID.randomUUID().toString())
             .type("token")
             .data(Faker.instance().name().firstName())

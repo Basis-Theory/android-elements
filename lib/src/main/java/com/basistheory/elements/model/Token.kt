@@ -39,9 +39,9 @@ class Token(
 )
 
 internal fun com.basistheory.types.Token.toAndroid(): Token = Token(
-        this.id.toString(),
+        this.id.get(),
         this.tenantId.toUUIDOrThrow(),
-        this.type.toString(),
+        this.type.get(),
         this.data,
         this.mask,
         this.fingerprint.orElse(null),

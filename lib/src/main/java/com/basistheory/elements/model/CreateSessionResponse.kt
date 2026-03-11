@@ -12,7 +12,7 @@ class CreateSessionResponse(
 
 internal fun com.basistheory.types.CreateSessionResponse.toAndroid(): CreateSessionResponse =
     CreateSessionResponse(
-        this.sessionKey!!.toString(),
-        this.nonce!!.toString(),
+        this.sessionKey.get(),
+        this.nonce.get(),
         this.expiresAt.get()
     )
