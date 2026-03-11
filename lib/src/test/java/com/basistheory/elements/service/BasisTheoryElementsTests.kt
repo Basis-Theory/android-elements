@@ -1632,6 +1632,7 @@ class BasisTheoryElementsTests {
 
     private fun fakeToken(): com.basistheory.types.Token =
         com.basistheory.types.Token.builder()
+            .id(UUID.randomUUID().toString())
             .tenantId(UUID.randomUUID().toString())
             .type("token")
             .data(Faker.instance().name().firstName())
