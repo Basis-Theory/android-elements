@@ -1,6 +1,6 @@
 package com.basistheory.elements.util
 
-import com.basistheory.core.Environment
+import com.basistheory.elements.model.Environment
 
 const val ApiUrl: String = "https://api.basistheory.com"
 const val ApiTestUrl: String = "https://api.test.basistheory.com"
@@ -11,5 +11,4 @@ fun Environment.getApiUrl(): String =
         Environment.EU -> ApiUrl
         Environment.TEST -> ApiTestUrl
         Environment.DEFAULT -> ApiUrl
-        else -> ApiUrl
     }

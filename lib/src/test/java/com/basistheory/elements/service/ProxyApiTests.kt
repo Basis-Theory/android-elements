@@ -1,7 +1,7 @@
 package com.basistheory.elements.service
 
-import com.basistheory.core.Environment
 import com.basistheory.elements.model.ElementValueReference
+import com.basistheory.elements.model.Environment
 import com.basistheory.elements.util.getEncodedDeviceInfo
 import io.mockk.CapturingSlot
 import io.mockk.every

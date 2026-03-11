@@ -1,6 +1,7 @@
 package com.basistheory.elements.service
 
-import com.basistheory.core.Environment
+import com.basistheory.elements.model.Environment
+import com.basistheory.elements.model.toJava
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 
@@ -32,7 +33,7 @@ class BasisTheoryElementsBuilder {
 
     fun build(): BasisTheoryElements =
         BasisTheoryElements(
-            ApiClientProvider(_apiUrl, _apiKey, _environment),
+            ApiClientProvider(_apiUrl, _apiKey, _environment.toJava()),
             _dispatcher
         )
 }
