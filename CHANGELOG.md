@@ -1,3 +1,11 @@
+## [2.8.0](https://github.com/Basis-Theory/android-elements/compare/2.7.1...2.8.0) (2026-03-12)
+
+
+### Features
+
+* adding android Environment type ([#35](https://github.com/Basis-Theory/android-elements/issues/35)) ([2cb888b](https://github.com/Basis-Theory/android-elements/commit/2cb888bc15b48707df27ffd3aeb033c5ab6ad43e))
+
+
 ### [2.7.1](https://github.com/Basis-Theory/android-elements/compare/2.7.0...2.7.1) (2026-03-11)
 
 
