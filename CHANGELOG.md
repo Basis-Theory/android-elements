@@ -1,3 +1,11 @@
+### [2.7.1](https://github.com/Basis-Theory/android-elements/compare/2.7.0...2.7.1) (2026-03-11)
+
+
+### Bug Fixes
+
+* fixing session nonce and key values ([#34](https://github.com/Basis-Theory/android-elements/issues/34)) ([b2897d0](https://github.com/Basis-Theory/android-elements/commit/b2897d038271b71828be47098fc8269845810c3d))
+
+
 ## [2.7.0](https://github.com/Basis-Theory/android-elements/compare/2.6.0...2.7.0) (2026-02-13)
 
 
