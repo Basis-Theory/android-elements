@@ -6,7 +6,7 @@ Kotlin SDK providing secure UI components for collecting sensitive data on Andro
 
 ```bash
 ./gradlew test                       # Unit tests (Robolectric, no emulator needed)
-./gradlew connectedAndroidTest       # Acceptance tests (requires running emulator)
+./gradlew connectedCheck              # Acceptance tests (requires running emulator)
 make verify                          # Full: syncs emulator clock + unit + acceptance
 ```
 
