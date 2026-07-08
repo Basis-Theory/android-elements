@@ -8,6 +8,7 @@ jobs:
   tag:
     name: Tag repo
     runs-on: ubuntu-latest
+    environment: PROD
     steps:
       - name: Start Deploy Message
         uses: Basis-Theory/public-github-actions/deploy-slack-action@master
@@ -15,15 +16,26 @@ jobs:
           slack-api-token: ${{ secrets.SLACK_DUCKBOT_API_KEY }}
           channel: ${{ vars.SLACK_DUCKBOT_RELEASE_CHANNEL_ID }}
 
+      - name: Mint semantic-release app token
+        id: app-token
+        uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1 # v3
+        with:
+          app-id: ${{ vars.SEMANTIC_RELEASE_APP_ID }}
+          private-key: ${{ secrets.SEMANTIC_RELEASE_APP_PRIVATE_KEY }}
+          permission-contents: write
+          permission-issues: write
+          permission-pull-requests: write
+
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
         with:
           fetch-depth: 0
-          token: ${{ secrets.GH_SEMANTIC_RELEASE_PAT }}
+          token: ${{ steps.app-token.outputs.token }}
+          persist-credentials: false
 
       - name: Bump version and push tag
         id: tag-version
-        uses: mathieudutour/github-tag-action@v6.0
+        uses: mathieudutour/github-tag-action@06382dcd483ebaea54d37e40ad576658a6c6ef73 # v6.0
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           default_bump: false
@@ -44,10 +56,10 @@ jobs:
           git commit -m "chore(release): updating version and changelog ${{ steps.tag-version.outputs.new_tag }} [skip ci]" || echo "Nothing to update"
 
       - name: Push changes
-        uses: ad-m/github-push-action@master
+        uses: ad-m/github-push-action@881a6320fdb16eb5318c5054f31c218aec2b324c # master
         if: ${{ steps.tag-version.outputs.release_type != '' }}
         with:
-          github_token: ${{ secrets.GH_SEMANTIC_RELEASE_PAT }}
+          github_token: ${{ steps.app-token.outputs.token }}
           branch: ${{ github.ref }}
 
       - name: Stop Deploy Message
