@@ -16,7 +16,7 @@ import com.basistheory.elements.model.exceptions.EncryptTokenException
 import com.basistheory.elements.model.toAndroid
 import com.basistheory.elements.model.toJava
 import com.basistheory.types.CardDetailsResponse
-import com.basistheory.resources.enrichments.requests.EnrichmentsGetCardDetailsRequest
+import com.basistheory.resources.enrichments.requests.EnrichmentsCardDetailsRequest
 import com.basistheory.elements.util.JWEEncryption
 import com.basistheory.elements.util.getElementsValues
 import com.basistheory.elements.util.isPrimitiveType
@@ -214,10 +214,10 @@ class BasisTheoryElements internal constructor(
         try {
             withContext(dispatcher) {
                 val enrichmentsClient = apiClientProvider.getEnrichmentsApi(apiKeyOverride)
-                val request = EnrichmentsGetCardDetailsRequest.builder()
+                val request = EnrichmentsCardDetailsRequest.builder()
                     .bin(bin)
                     .build()
-                enrichmentsClient.getcarddetails(request)
+                enrichmentsClient.cardDetails(request)
             }
         } catch (e: com.basistheory.core.BasisTheoryApiApiException) {
             throw ApiException(e.statusCode(), e.headers(), e.body().toString(), e.message)

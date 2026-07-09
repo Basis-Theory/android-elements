@@ -3,7 +3,7 @@ activityCompose = "1.9.3"
 androidGifDrawable = "1.2.27"
 androidGradlePlugin = "8.9.1"
 appcompat = "1.7.0"
-basistheoryJava = "4.2.0"
+basistheoryJava = "7.0.3"
 commonsLang3 = "3.17.0"
 constraintlayout = "2.2.0"
 desugar_jdk_libs = "2.1.4"
@@ -23,7 +23,7 @@ compose = "1.7.6"
 material = "1.12.0"
 mockk = "1.13.8"
 navigationFragmentKtx = "2.8.5"
-okhttp = "4.11.0"
+okhttp = "5.2.1"
 robolectric = "4.13"
 striktCore = "0.34.1"
 threetenbp = "1.6.8"
@@ -51,7 +51,7 @@ androidx-navigation-ui-ktx = { module = "androidx.navigation:navigation-ui-ktx",
 androidx-ui-test-junit4 = { module = "androidx.compose.ui:ui-test-junit4", version.ref = "compose" }
 androidx-ui-test-manifest = { module = "androidx.compose.ui:ui-test-manifest", version.ref = "compose" }
 androidx-ui-tooling = { module = "androidx.compose.ui:ui-tooling", version.ref = "compose" }
-basistheory-javaSdk = { module = "com.github.basis-theory:java-sdk", version.ref = "basistheoryJava" }
+basistheory-javaSdk = { module = "com.basistheory:api-client", version.ref = "basistheoryJava" }
 commons-lang3 = { module = "org.apache.commons:commons-lang3", version.ref = "commonsLang3" }
 desugar_jdk_libs = { module = "com.android.tools:desugar_jdk_libs", version.ref = "desugar_jdk_libs" }
 gson = { module = "com.google.code.gson:gson", version.ref = "gson" }

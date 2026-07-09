@@ -485,7 +485,7 @@ class BasisTheoryElementsTests {
         val apiKeyOverride = UUID.randomUUID().toString()
 
         every { provider.getTokensApi(any()) } returns tokensApi
-        every { tokensApi.create(any()) } returns fakeToken()
+        every { tokensApi.create(any<com.basistheory.types.CreateTokenRequest>()) } returns fakeToken()
 
         bt.createToken(CreateTokenRequest(type = "token", data = ""), apiKeyOverride)
 
@@ -496,7 +496,7 @@ class BasisTheoryElementsTests {
     fun `createToken should forward top level primitive value without modification`() =
         runBlocking {
             every { provider.getTokensApi(any()) } returns tokensApi
-            every { tokensApi.create(any()) } returns fakeToken()
+            every { tokensApi.create(any<com.basistheory.types.CreateTokenRequest>()) } returns fakeToken()
 
             val name = faker.name().fullName()
             val createTokenRequest = createTokenRequest(name)
@@ -509,7 +509,7 @@ class BasisTheoryElementsTests {
     fun `createToken should forward complex data values within request without modification`() =
         runBlocking {
             every { provider.getTokensApi(any()) } returns tokensApi
-            every { tokensApi.create(any()) } returns fakeToken()
+            every { tokensApi.create(any<com.basistheory.types.CreateTokenRequest>()) } returns fakeToken()
 
             val data = object {
                 val string = faker.lorem().word()
@@ -558,7 +558,7 @@ class BasisTheoryElementsTests {
     fun `createToken should replace top level TextElement ref with underlying data value`() =
         runBlocking {
             every { provider.getTokensApi(any()) } returns tokensApi
-            every { tokensApi.create(any()) } returns fakeToken()
+            every { tokensApi.create(any<com.basistheory.types.CreateTokenRequest>()) } returns fakeToken()
 
             val name = faker.name().fullName()
             nameElement.setText(name)
@@ -576,7 +576,7 @@ class BasisTheoryElementsTests {
     fun `createToken should replace top level CardElement ref with underlying data value`() =
         runBlocking {
             every { provider.getTokensApi(any()) } returns tokensApi
-            every { tokensApi.create(any()) } returns fakeToken()
+            every { tokensApi.create(any<com.basistheory.types.CreateTokenRequest>()) } returns fakeToken()
 
             val cardNumber = testCardNumbers.random()
             cardNumberElement.setText(cardNumber)
@@ -594,7 +594,7 @@ class BasisTheoryElementsTests {
     fun `createToken should replace top level CardExpirationDateElement refs with underlying data value`() =
         runBlocking {
             every { provider.getTokensApi(any()) } returns tokensApi
-            every { tokensApi.create(any()) } returns fakeToken()
+            every { tokensApi.create(any<com.basistheory.types.CreateTokenRequest>()) } returns fakeToken()
 
             val expDate = LocalDate.now().plus(2, ChronoUnit.YEARS)
             val month = expDate.monthValue.toString().padStart(2, '0')
@@ -619,7 +619,7 @@ class BasisTheoryElementsTests {
     fun `createToken should replace Element refs within request object with underlying data values`() =
         runBlocking {
             every { provider.getTokensApi(any()) } returns tokensApi
-            every { tokensApi.create(any()) } returns fakeToken()
+            every { tokensApi.create(any<com.basistheory.types.CreateTokenRequest>()) } returns fakeToken()
 
             val name = faker.name().fullName()
             nameElement.setText(name)
@@ -696,7 +696,7 @@ class BasisTheoryElementsTests {
     fun `createToken should respect getValueType type when sending values to the API`() =
         runBlocking {
             every { provider.getTokensApi(any()) } returns tokensApi
-            every { tokensApi.create(any()) } returns fakeToken()
+            every { tokensApi.create(any<com.basistheory.types.CreateTokenRequest>()) } returns fakeToken()
 
 
             val testString = faker.name().firstName()
@@ -1112,7 +1112,7 @@ class BasisTheoryElementsTests {
                     )
                 }
 
-            verify { tokensApi.create(any()) wasNot Called }
+            verify { tokensApi.create(any<com.basistheory.types.CreateTokenRequest>()) wasNot Called }
         }
 
     @Test
@@ -1140,7 +1140,7 @@ class BasisTheoryElementsTests {
         runBlocking {
             every { provider.getTokensApi(any()) } returns tokensApi
 
-            every { tokensApi.create(any()) } throws com.basistheory.core.BasisTheoryApiApiException(
+            every { tokensApi.create(any<com.basistheory.types.CreateTokenRequest>()) } throws com.basistheory.core.BasisTheoryApiApiException(
                 "Api Error",
                 401,
                 ""
@@ -1529,7 +1529,7 @@ class BasisTheoryElementsTests {
         val tokenId = UUID.randomUUID().toString()
 
         every { provider.getTokensApi(any()) } returns tokensApi
-        every { tokensApi.update(any(), any()) } returns fakeToken()
+        every { tokensApi.update(any(), any<com.basistheory.resources.tokens.requests.UpdateTokenRequest>()) } returns fakeToken()
 
         bt.updateToken(tokenId, UpdateTokenRequest(data = ""), apiKeyOverride)
 
@@ -1540,7 +1540,7 @@ class BasisTheoryElementsTests {
     fun `updateToken should forward top level primitive value without modification`() =
         runBlocking {
             every { provider.getTokensApi(any()) } returns tokensApi
-            every { tokensApi.update(any(), any()) } returns fakeToken()
+            every { tokensApi.update(any(), any<com.basistheory.resources.tokens.requests.UpdateTokenRequest>()) } returns fakeToken()
 
             val tokenId = UUID.randomUUID().toString()
             val name = faker.name().fullName()
@@ -1554,7 +1554,7 @@ class BasisTheoryElementsTests {
     fun `updateToken should replace Element refs within request object with underlying data values`() =
         runBlocking {
             every { provider.getTokensApi(any()) } returns tokensApi
-            every { tokensApi.update(any(), any()) } returns fakeToken()
+            every { tokensApi.update(any(), any<com.basistheory.resources.tokens.requests.UpdateTokenRequest>()) } returns fakeToken()
 
             val tokenId = UUID.randomUUID().toString()
             val cvc = faker.random().nextInt(100, 999).toString()
@@ -1580,7 +1580,7 @@ class BasisTheoryElementsTests {
         runBlocking {
             every { provider.getTokensApi(any()) } returns tokensApi
 
-            every { tokensApi.update(any(), any()) } throws com.basistheory.core.BasisTheoryApiApiException(
+            every { tokensApi.update(any(), any<com.basistheory.resources.tokens.requests.UpdateTokenRequest>()) } throws com.basistheory.core.BasisTheoryApiApiException(
                 "Api Error",
                 401,
                 ""
@@ -1627,7 +1627,7 @@ class BasisTheoryElementsTests {
                 )
             }
 
-        verify { tokensApi.create(any()) wasNot Called }
+        verify { tokensApi.create(any<com.basistheory.types.CreateTokenRequest>()) wasNot Called }
     }
 
     private fun fakeToken(): com.basistheory.types.Token =
