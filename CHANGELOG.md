@@ -1,3 +1,11 @@
+### [2.8.1](https://github.com/Basis-Theory/android-elements/compare/2.8.0...2.8.1) (2026-07-13)
+
+
+### Bug Fixes
+
+* **ENG-11542:** use bt_semantic_release app token for release write-back ([#38](https://github.com/Basis-Theory/android-elements/issues/38)) ([187e675](https://github.com/Basis-Theory/android-elements/commit/187e675e8531c48bd88334f2bb74d9920af7bc3c))
+
+
 ## [2.8.0](https://github.com/Basis-Theory/android-elements/compare/2.7.1...2.8.0) (2026-03-12)
 
 
