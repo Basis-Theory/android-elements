@@ -2,6 +2,7 @@ package com.basistheory.elements.service
 
 import com.basistheory.elements.model.ElementValueReference
 import com.basistheory.elements.model.Environment
+import com.basistheory.elements.util.ApiUrl
 import com.basistheory.elements.util.getApiUrl
 import com.basistheory.elements.util.getEncodedDeviceInfo
 import com.basistheory.elements.util.isPrimitiveType
@@ -95,7 +96,7 @@ class ProxyApi(
             }
         }
 
-        val finalApiBaseUrl = if (apiBaseUrl !== "https://api.basistheory.com") apiBaseUrl else environment.getApiUrl()
+        val finalApiBaseUrl = if (apiBaseUrl != ApiUrl) apiBaseUrl else environment.getApiUrl()
         val urlBuilder = (finalApiBaseUrl + "/proxy" + (proxyRequest.path.orEmpty()))
             .toHttpUrlOrNull()?.newBuilder()
             ?: throw IllegalArgumentException("Invalid URL")
