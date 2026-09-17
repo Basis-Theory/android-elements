@@ -54,11 +54,37 @@ jobs:
       - name: Setup Gradle cache
         uses: gradle/gradle-build-action@v2.4.2
 
+      # The emulator intermittently fails to finish booting on the macOS runner. When
+      # it does, the job proceeds against a device reporting API level 1, the APK
+      # install fails, and Gradle reports "There were failing tests" having run none.
+      # One retry on a freshly created AVD covers it; a real test failure still fails
+      # the job, it just costs a second attempt.
       - name: Run tests
+        id: tests
+        continue-on-error: true
         uses: reactivecircus/android-emulator-runner@v2
         with:
           api-level: ${{ matrix.api-level }}
           force-avd-creation: false
+          emulator-boot-timeout: 900
+          emulator-options: -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
+          target: default
+          arch: x86_64
+          profile: pixel_3a
+          script: |
+            adb shell settings put global window_animation_scale 0
+            adb shell settings put global transition_animation_scale 0
+            adb shell settings put global animator_duration_scale 0
+            ./gradlew connectedCheck
+
+      - name: Run tests (retry)
+        if: steps.tests.outcome == 'failure'
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: ${{ matrix.api-level }}
+          # Recreate the AVD rather than reuse the one that just failed to boot.
+          force-avd-creation: true
+          emulator-boot-timeout: 900
           emulator-options: -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
           target: default
           arch: x86_64
