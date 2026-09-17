@@ -1,6 +1,8 @@
 package com.basistheory.elements.service
 
 import com.basistheory.elements.model.ElementValueReference
+import com.basistheory.elements.model.Environment
+import com.basistheory.elements.util.getApiUrl
 import com.basistheory.elements.util.getEncodedDeviceInfo
 import com.basistheory.elements.util.isPrimitiveType
 import com.basistheory.elements.util.replaceElementRefs
@@ -50,9 +52,15 @@ class ProxyRequest {
 
 class ProxyApi(
     val dispatcher: CoroutineDispatcher = Dispatchers.IO,
-    val apiBaseUrl: String = "https://api.basistheory.com",
+    val apiBaseUrl: String? = null,
     val apiKey: String,
-    val httpClient: OkHttpClient = OkHttpClient()
+    val httpClient: OkHttpClient = OkHttpClient(),
+    /**
+     * Retained for backward compatibility with callers that construct [ProxyApi]
+     * directly. Prefer supplying [apiBaseUrl]; [ApiClientProvider] always does, and it
+     * owns url resolution for every other client.
+     */
+    val environment: Environment = Environment.DEFAULT
 ) : Proxy {
 
     override suspend fun get(proxyRequest: ProxyRequest, apiKeyOverride: String?): Any? =
@@ -92,10 +100,11 @@ class ProxyApi(
             }
         }
 
-        // ApiClientProvider is the single source of truth for the resolved url. Deciding
-        // here by comparing against the compatibility literal would silently override a
-        // caller who passes that host explicitly while also selecting a region.
-        val urlBuilder = (apiBaseUrl + "/proxy" + (proxyRequest.path.orEmpty()))
+        // Nullable rather than compared against the compatibility literal: a caller who
+        // passes that host explicitly while also selecting a region must keep the host
+        // they asked for. Mirrors ApiClientProvider.resolvedApiUrl.
+        val finalApiBaseUrl = apiBaseUrl ?: environment.getApiUrl()
+        val urlBuilder = (finalApiBaseUrl + "/proxy" + (proxyRequest.path.orEmpty()))
             .toHttpUrlOrNull()?.newBuilder()
             ?: throw IllegalArgumentException("Invalid URL")
         proxyRequest.queryParams?.toPairs()?.forEach { (key, value) ->

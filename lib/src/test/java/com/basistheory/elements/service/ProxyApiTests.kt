@@ -1,8 +1,10 @@
 package com.basistheory.elements.service
 
 import com.basistheory.elements.model.ElementValueReference
+import com.basistheory.elements.model.Environment
 import com.basistheory.elements.util.ApiEuUrl
 import com.basistheory.elements.util.ApiTestUrl
+import com.basistheory.elements.util.ApiUrl
 import com.basistheory.elements.util.ApiUsUrl
 import com.basistheory.elements.util.getEncodedDeviceInfo
 import io.mockk.CapturingSlot
@@ -208,6 +210,67 @@ class ProxyApiTests {
         }
 
         expectThat(result).isA<ElementValueReference>()
+    }
+
+    @Test
+    fun `should use an explicit apiBaseUrl even when it matches the compatibility host`() {
+        proxyApi = ProxyApi(
+            dispatcher = Dispatchers.IO,
+            apiBaseUrl = ApiUrl,
+            apiKey = "124",
+            httpClient = mockHttpClient,
+            environment = Environment.EU
+        )
+
+        val queryParamValue = UUID.randomUUID().toString()
+        proxyRequest = proxyRequest.apply {
+            path = "/payment"
+            headers = mapOf(
+                "BT-PROXY-URL" to "https://echo.basistheory.com/post",
+                "Content-Type" to "text/plain"
+            )
+            queryParams = mapOf("param" to queryParamValue)
+            body = "Hello World"
+        }
+
+        val requestSlot = setupMocks("\"Hello World\"")
+
+        runBlocking { proxyApi.post(proxyRequest) }
+
+        expectThat(requestSlot.captured) {
+            get { url.toString() }
+                .isEqualTo("https://api.basistheory.com/proxy/payment?param=${queryParamValue}")
+        }
+    }
+
+    @Test
+    fun `should fall back to the environment when no apiBaseUrl is supplied`() {
+        proxyApi = ProxyApi(
+            dispatcher = Dispatchers.IO,
+            apiKey = "124",
+            httpClient = mockHttpClient,
+            environment = Environment.EU
+        )
+
+        val queryParamValue = UUID.randomUUID().toString()
+        proxyRequest = proxyRequest.apply {
+            path = "/payment"
+            headers = mapOf(
+                "BT-PROXY-URL" to "https://echo.basistheory.com/post",
+                "Content-Type" to "text/plain"
+            )
+            queryParams = mapOf("param" to queryParamValue)
+            body = "Hello World"
+        }
+
+        val requestSlot = setupMocks("\"Hello World\"")
+
+        runBlocking { proxyApi.post(proxyRequest) }
+
+        expectThat(requestSlot.captured) {
+            get { url.toString() }
+                .isEqualTo("https://api.eu.basistheory.com/proxy/payment?param=${queryParamValue}")
+        }
     }
 
     @Test
