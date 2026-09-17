@@ -52,16 +52,23 @@ class ProxyRequest {
 
 class ProxyApi(
     val dispatcher: CoroutineDispatcher = Dispatchers.IO,
-    val apiBaseUrl: String? = null,
+    apiBaseUrl: String? = null,
     val apiKey: String,
     val httpClient: OkHttpClient = OkHttpClient(),
     /**
-     * Retained for backward compatibility with callers that construct [ProxyApi]
-     * directly. Prefer supplying [apiBaseUrl]; [ApiClientProvider] always does, and it
-     * owns url resolution for every other client.
+     * Retained for callers that construct [ProxyApi] directly. Prefer supplying
+     * [apiBaseUrl]; [ApiClientProvider] always does, and it owns url resolution for
+     * every other client.
      */
     val environment: Environment = Environment.DEFAULT
 ) : Proxy {
+
+    /**
+     * Resolved once at construction. Nullable on the way in so that "not supplied" is
+     * distinguishable from "supplied as the compatibility host": a caller who names
+     * that host explicitly while also selecting a region keeps the host they asked for.
+     */
+    val apiBaseUrl: String = apiBaseUrl ?: environment.getApiUrl()
 
     override suspend fun get(proxyRequest: ProxyRequest, apiKeyOverride: String?): Any? =
         withContext(dispatcher) {
@@ -100,11 +107,7 @@ class ProxyApi(
             }
         }
 
-        // Nullable rather than compared against the compatibility literal: a caller who
-        // passes that host explicitly while also selecting a region must keep the host
-        // they asked for. Mirrors ApiClientProvider.resolvedApiUrl.
-        val finalApiBaseUrl = apiBaseUrl ?: environment.getApiUrl()
-        val urlBuilder = (finalApiBaseUrl + "/proxy" + (proxyRequest.path.orEmpty()))
+        val urlBuilder = (apiBaseUrl + "/proxy" + (proxyRequest.path.orEmpty()))
             .toHttpUrlOrNull()?.newBuilder()
             ?: throw IllegalArgumentException("Invalid URL")
         proxyRequest.queryParams?.toPairs()?.forEach { (key, value) ->
