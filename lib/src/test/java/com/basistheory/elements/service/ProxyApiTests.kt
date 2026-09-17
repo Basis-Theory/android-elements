@@ -1,7 +1,9 @@
 package com.basistheory.elements.service
 
 import com.basistheory.elements.model.ElementValueReference
-import com.basistheory.elements.model.Environment
+import com.basistheory.elements.util.ApiEuUrl
+import com.basistheory.elements.util.ApiTestUrl
+import com.basistheory.elements.util.ApiUsUrl
 import com.basistheory.elements.util.getEncodedDeviceInfo
 import io.mockk.CapturingSlot
 import io.mockk.every
@@ -78,8 +80,7 @@ class ProxyApiTests {
         proxyApi = ProxyApi(
             dispatcher = Dispatchers.IO,
             apiKey = "124",
-            httpClient = mockHttpClient,
-            environment = Environment.DEFAULT
+            httpClient = mockHttpClient
         )
         proxyRequest = ProxyRequest()
 
@@ -142,12 +143,12 @@ class ProxyApiTests {
     }
 
     @Test
-    fun `should use the us url when environment is us`() {
+    fun `should use the us url when it is given the us base url`() {
         proxyApi = ProxyApi(
             dispatcher = Dispatchers.IO,
             apiKey = "124",
-            httpClient = mockHttpClient,
-            environment = Environment.US
+            apiBaseUrl = ApiUsUrl,
+            httpClient = mockHttpClient
         )
 
         val queryParamValue = UUID.randomUUID().toString()
@@ -176,12 +177,12 @@ class ProxyApiTests {
     }
 
     @Test
-    fun `should use the eu url when environment is eu`() {
+    fun `should use the eu url when it is given the eu base url`() {
         proxyApi = ProxyApi(
             dispatcher = Dispatchers.IO,
             apiKey = "124",
-            httpClient = mockHttpClient,
-            environment = Environment.EU
+            apiBaseUrl = ApiEuUrl,
+            httpClient = mockHttpClient
         )
 
         val queryParamValue = UUID.randomUUID().toString()
@@ -210,43 +211,12 @@ class ProxyApiTests {
     }
 
     @Test
-    fun `should use an explicit apiBaseUrl over the environment`() {
-        proxyApi = ProxyApi(
-            dispatcher = Dispatchers.IO,
-            apiBaseUrl = "https://my-custom-api.basistheory.com",
-            apiKey = "124",
-            httpClient = mockHttpClient,
-            environment = Environment.EU
-        )
-
-        val queryParamValue = UUID.randomUUID().toString()
-        proxyRequest = proxyRequest.apply {
-            path = "/payment"
-            headers = mapOf(
-                "BT-PROXY-URL" to "https://echo.basistheory.com/post",
-                "Content-Type" to "text/plain"
-            )
-            queryParams = mapOf("param" to queryParamValue)
-            body = "Hello World"
-        }
-
-        val requestSlot = setupMocks("\"Hello World\"")
-
-        runBlocking { proxyApi.post(proxyRequest) }
-
-        expectThat(requestSlot.captured) {
-            get { url.toString() }
-                .isEqualTo("https://my-custom-api.basistheory.com/proxy/payment?param=${queryParamValue}")
-        }
-    }
-
-    @Test
-    fun `should use uat url when environment is test`() {
+    fun `should use the test url when it is given the test base url`() {
         proxyApi = ProxyApi(
             dispatcher = Dispatchers.IO,
             apiKey = "124",
-            httpClient = mockHttpClient,
-            environment = Environment.TEST
+            apiBaseUrl = ApiTestUrl,
+            httpClient = mockHttpClient
         )
 
         val queryParamValue = UUID.randomUUID().toString()

@@ -1,9 +1,6 @@
 package com.basistheory.elements.service
 
 import com.basistheory.elements.model.ElementValueReference
-import com.basistheory.elements.model.Environment
-import com.basistheory.elements.util.ApiUrl
-import com.basistheory.elements.util.getApiUrl
 import com.basistheory.elements.util.getEncodedDeviceInfo
 import com.basistheory.elements.util.isPrimitiveType
 import com.basistheory.elements.util.replaceElementRefs
@@ -55,8 +52,7 @@ class ProxyApi(
     val dispatcher: CoroutineDispatcher = Dispatchers.IO,
     val apiBaseUrl: String = "https://api.basistheory.com",
     val apiKey: String,
-    val httpClient: OkHttpClient = OkHttpClient(),
-    val environment: Environment = Environment.DEFAULT
+    val httpClient: OkHttpClient = OkHttpClient()
 ) : Proxy {
 
     override suspend fun get(proxyRequest: ProxyRequest, apiKeyOverride: String?): Any? =
@@ -96,8 +92,10 @@ class ProxyApi(
             }
         }
 
-        val finalApiBaseUrl = if (apiBaseUrl != ApiUrl) apiBaseUrl else environment.getApiUrl()
-        val urlBuilder = (finalApiBaseUrl + "/proxy" + (proxyRequest.path.orEmpty()))
+        // ApiClientProvider is the single source of truth for the resolved url. Deciding
+        // here by comparing against the compatibility literal would silently override a
+        // caller who passes that host explicitly while also selecting a region.
+        val urlBuilder = (apiBaseUrl + "/proxy" + (proxyRequest.path.orEmpty()))
             .toHttpUrlOrNull()?.newBuilder()
             ?: throw IllegalArgumentException("Invalid URL")
         proxyRequest.queryParams?.toPairs()?.forEach { (key, value) ->
