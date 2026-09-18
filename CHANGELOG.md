@@ -1,3 +1,16 @@
+### [2.8.2](https://github.com/Basis-Theory/android-elements/compare/2.8.1...2.8.2) (2026-09-18)
+
+
+### Bug Fixes
+
+* **ENG-11715:** resolve one regional url for every client including proxy ([#40](https://github.com/Basis-Theory/android-elements/issues/40)) ([203c5f1](https://github.com/Basis-Theory/android-elements/commit/203c5f1932083d57dbbe5dcd129930eff2866eaa))
+
+
+### Continuous Integration
+
+* retry the acceptance run when the emulator fails to boot ([#41](https://github.com/Basis-Theory/android-elements/issues/41)) ([cd03cc2](https://github.com/Basis-Theory/android-elements/commit/cd03cc2d1a4bad99da20ef9c6b31368cbd6973ce))
+
+
 ### [2.8.1](https://github.com/Basis-Theory/android-elements/compare/2.8.0...2.8.1) (2026-07-13)
 
 
